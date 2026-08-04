@@ -55,10 +55,23 @@ const assets = []
  * The entry set is read from index.html rather than guessed at — whatever the
  * HTML references with <script> or modulepreload is what loads on arrival.
  */
+/**
+ * Matched on BASENAME, not on path.
+ *
+ * The HTML references assets through the deploy base path (`/Harrypotter/...`
+ * on Pages, `/` elsewhere) while the files on disk are relative to dist/.
+ * Comparing full paths silently misfiles the entry bundle as deferred the
+ * moment `base` changes — which reported this whole site as 1.9 kB. Vite
+ * content-hashes every filename, so basenames are already unique.
+ */
 const entryRefs = (() => {
   try {
     const html = readFileSync(join(DIST, 'index.html'), 'utf8')
-    return new Set([...html.matchAll(/(?:src|href)="\/?([^"]+\.(?:js|css))"/g)].map((m) => m[1]))
+    return new Set(
+      [...html.matchAll(/(?:src|href)="([^"]+\.(?:js|css))"/g)].map((m) =>
+        m[1].split('/').pop(),
+      ),
+    )
   } catch {
     return null
   }
@@ -67,9 +80,8 @@ const entryRefs = (() => {
 const isOptIn = (p) => {
   if (p.includes('vendor/')) return true
   if (!entryRefs) return false
-  const rel = p.replace(/^.*?dist\//, '')
   // A JS chunk the entry HTML never references is loaded on demand, if at all.
-  return extname(p) === '.js' && !entryRefs.has(rel)
+  return extname(p) === '.js' && !entryRefs.has(p.split('/').pop())
 }
 
 for (const f of files) {
