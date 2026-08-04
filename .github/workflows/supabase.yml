@@ -1,0 +1,51 @@
+name: Deploy to Supabase Storage
+
+# A second home for the same build. Runs alongside the Pages deploy rather than
+# replacing it — they are two copies of one dist/, and having both costs
+# nothing.
+#
+# Needs two repository secrets:
+#   SUPABASE_URL          https://<project>.supabase.co
+#   SUPABASE_SERVICE_KEY  the service_role key (Settings -> API)
+#
+# The service key bypasses row level security. It belongs in a GitHub secret
+# and nowhere else — never committed, never in client code, never in a chat.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - claude/harry-potter-3d-website-8z9v03
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Skips cleanly rather than failing the run for anyone without the secrets.
+    if: vars.SUPABASE_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build for the Storage path
+        # Objects are served from a fixed public prefix, so assets must resolve
+        # against it. A root-relative build 404s on every asset here.
+        run: npm run build
+        env:
+          BASE_PATH: /storage/v1/object/public/site/
+
+      - name: Upload
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_BUCKET: site
+        run: node scripts/deploy-supabase.mjs dist

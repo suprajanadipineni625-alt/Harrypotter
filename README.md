@@ -62,15 +62,33 @@ Live at **https://suprajanadipineni625-alt.github.io/Harrypotter/** once enabled
 The workflow type-checks, builds, enforces the 10 MB budget as a hard gate, and
 walks the whole story in a real browser before it publishes anything.
 
+### Supabase Storage
+
+A second home for the same build, deployed by `.github/workflows/supabase.yml`.
+Storage serves public objects over HTTP, and this site is a single page with no
+client-side routing, so there are no deep URLs needing a rewrite to index.html.
+
+Needs two repository secrets — `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`. The
+service key bypasses row level security, so it belongs in a GitHub secret and
+nowhere else.
+
+The one real cost: the link is long.
+
+```
+https://<project>.supabase.co/storage/v1/object/public/site/index.html
+```
+
+For a link posted to social that is worse than `<user>.github.io/Harrypotter/`.
+Both deploys can run at once — they are two copies of one `dist/` — so this is
+a choice about which URL to share, not which host to keep.
+
 ### Other hosts
 
 `base` is overridable, so a root-path deploy works anywhere:
 
 ```bash
-BASE_PATH=/ npm run build     # then upload dist/ to Netlify, Firebase, anywhere
+BASE_PATH=/ npm run build     # then upload dist/ to Netlify, Vercel, Cloudflare
 ```
-
-Both of those need an auth token; Pages does not, which is why it is the default.
 
 ## Architecture
 

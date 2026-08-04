@@ -14,7 +14,8 @@
     "reel:studio": "remotion studio remotion/index.ts",
     "reel:render": "node scripts/render-reel.mjs",
     "art:generate": "node scripts/generate-art.mjs",
-    "art:wire": "node scripts/wire-art.mjs"
+    "art:wire": "node scripts/wire-art.mjs",
+    "deploy:supabase": "node scripts/deploy-supabase.mjs dist"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",
