@@ -12,7 +12,9 @@
     "budget": "node scripts/budget.mjs",
     "setup:gesture": "node scripts/setup-gesture.mjs",
     "reel:studio": "remotion studio remotion/index.ts",
-    "reel:render": "node scripts/render-reel.mjs"
+    "reel:render": "node scripts/render-reel.mjs",
+    "art:generate": "node scripts/generate-art.mjs",
+    "art:wire": "node scripts/wire-art.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",

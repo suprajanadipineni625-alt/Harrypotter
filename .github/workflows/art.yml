@@ -1,0 +1,84 @@
+name: Generate scene art
+
+# Runs the image generation where there IS network.
+#
+# The dev container's egress policy denies image-API hosts, so generation
+# cannot happen there at all. Here it can — and the key lives in a repository
+# secret, so it is never pasted into a chat, never committed, and never seen by
+# anyone but GitHub and the provider.
+#
+# Manual only. Nothing here should ever fire on a push: image generation costs
+# money, and a workflow that spends money on every commit is a trap.
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider:
+        description: Which API to use
+        type: choice
+        options: [deepinfra, openai]
+        default: deepinfra
+      model:
+        description: 'deepinfra: schnell (~$0.003) or dev (~$0.025) · openai: low (~$0.011) or medium (~$0.042)'
+        type: string
+        default: schnell
+      budget:
+        description: Hard ceiling in USD. The run stops rather than exceeding it.
+        type: string
+        default: '1.00'
+      only:
+        description: Comma-separated scene ids, or blank for all
+        type: string
+        default: ''
+      force:
+        description: Regenerate scenes that already have an image
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate
+        env:
+          # Add whichever you use under Settings -> Secrets and variables ->
+          # Actions. Only the one matching `provider` is needed.
+          DEEPINFRA_API_KEY: ${{ secrets.DEEPINFRA_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          node scripts/generate-art.mjs \
+            --provider='${{ inputs.provider }}' \
+            --model='${{ inputs.model }}' \
+            --budget='${{ inputs.budget }}' \
+            ${{ inputs.only && format('--only={0}', inputs.only) || '' }} \
+            ${{ inputs.force && '--force' || '' }}
+
+      - name: Point the scenes at the new backdrops
+        run: node scripts/wire-art.mjs
+
+      - name: Commit
+        run: |
+          git config user.name  'Claude'
+          git config user.email 'noreply@anthropic.com'
+          git add public/scenes src/story/parts.ts
+          if git diff --staged --quiet; then
+            echo 'Nothing generated — no commit.'
+            exit 0
+          fi
+          git commit -m 'Add generated scene backdrops
+
+          Generated via ${{ inputs.provider }}/${{ inputs.model }} under a
+          $${{ inputs.budget }} ceiling, and wired into the scenes that have
+          one. Scenes without a backdrop keep drawing procedurally.'
+          git push

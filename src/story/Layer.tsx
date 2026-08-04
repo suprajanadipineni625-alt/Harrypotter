@@ -119,8 +119,15 @@ export function Layer({
 
   const texture = useMemo(() => {
     if (!image) return null
-    // Painted art path. Loaded only for scenes that have it.
-    return new TextureLoader().load(image)
+    // Painted art path. Loaded only for scenes that have it — a scene with no
+    // backdrop never fetches anything.
+    //
+    // Resolved against BASE_URL because the site is served from a sub-path on
+    // Pages. A root-relative path here 404s in production while working
+    // perfectly in dev, which is the worst kind of bug.
+    const base = import.meta.env.BASE_URL ?? '/'
+    const url = image.startsWith('http') ? image : `${base}${image.replace(/^\//, '')}`
+    return new TextureLoader().load(url)
   }, [image])
 
   const material = useMemo(() => {
