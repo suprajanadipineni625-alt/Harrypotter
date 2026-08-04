@@ -13,8 +13,14 @@ small decisions. Run `npm run budget` after any build to reconcile it.
    the failure this file prevents.
 2. **CC0 by default.** Poly Haven first. Anything not CC0 needs its attribution
    requirements written into the Notes column, and honoured in the site.
-3. **No film assets.** No stills, no logos, no house crests, no official fonts,
-   no ripped models. See BUILD-CONSTRAINTS §5.
+   CC-BY means the credit appears *in the site*, not just in this file.
+3. **Model from the real buildings, never the film.** Hogwarts was shot at
+   Alnwick Castle, Durham and Gloucester Cathedrals and Lacock Abbey — public
+   heritage architecture, not Warner Bros. property. See docs/REFERENCES.md for
+   the full mapping and the decimation workflow. No film stills, no logos, no
+   house crests, no official fonts, no ripped models.
+   **Raw photogrammetry never ships** — it is source material for proportions,
+   then decimated hard and instanced.
 4. **Geometry is Draco'd, textures are KTX2.** A PNG that looks small on disk
    still costs ~16 MB of VRAM at 2048². Decoders are self-hosted in
    `public/vendor/`, never a CDN.
