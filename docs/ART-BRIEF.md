@@ -49,6 +49,27 @@ A generator producing something is also not a clearance. The filter reflects
 that tool's policy, not what is safe to publish on a site built to be shared.
 Both point the same way here, which is convenient.
 
+## The rule, stated more precisely
+
+The test is what ends up **in the image**, not what appears in the prompt.
+
+- **Words in a prompt are invisible in the output.** Using a coined creature or
+  spell name to steer the model toward the right cold, the right dread, the
+  right kind of light is fine and often the fastest way to get there. Nobody
+  can inspect the finished picture and find the word.
+- **Marks rendered into the artwork are permanent and visible.** A wordmark
+  painted on a boiler, a house crest on a banner, a platform number on a sign —
+  those live in the file, in the repo, and on the page.
+
+Earlier guidance here treated both the same. It should not have: one is a
+steering instruction, the other is a reproduction.
+
+Practical consequence: steer freely, but always end a prompt with an explicit
+ban on lettering, and check the result. Some subjects pull hard toward signage
+whatever the prompt says — a steam locomotive at a lamplit platform is the
+worst offender, because almost every reference image of one carries a
+nameplate.
+
 ## A note on what to ask for
 
 These prompts deliberately describe **places and weather — never characters,
