@@ -66,6 +66,32 @@ The skills in this directory are third-party, vendored under their original lice
   NOT vendored — they overlap the Three.js core set above and would give
   conflicting guidance on the same topics.
 
+## Cinematic motion + effects (18 skills)
+
+- Source: https://github.com/MengTo/Skills (Design+Code)
+- License: MIT
+- Vendored subset, chosen for a cinematic scroll narrative:
+  - Direction: `build-awwwards-quality-sites`, `animation-systems`
+  - Scroll: `cinematic-gsap-lenis-motion-system` (**our Lenis coverage**),
+    `cinematic-scroll-storytelling`, `scroll-world-storytelling`,
+    `gsap-scrolltrigger-storytelling`, `scroll-scrubbed-visual-sequence`,
+    `scroll-progress-timeline`
+  - Reveals: `masked-reveal`, `staggered-word-reveal`,
+    `scroll-scrubbed-word-reveal`
+  - Atmosphere: `atmosphere-background`, `ambient-section-particles`,
+    `progressive-blur`
+  - Cursor: `add-shader-cursor-trail`, `shaders-cursor-ripples`
+  - 3D: `webgl-3d-object`
+  - Assets: `unsplash-asset-images`
+- Not vendored: ~60 further "look" skills (SaaS/enterprise palettes such as
+  `orange-clean-paper-saas`, `blue-cloudy-clean-modern`) — wrong aesthetic
+  register for this project. Also skipped their `gsap` and `threejs` skills,
+  which overlap the official GSAP set and the Three.js core set.
+- Deviation from upstream: demo **media** over 80 KB (stock jpg/webp/mp4) was
+  deleted to keep the repo lean — 33 MB down to 8.3 MB. All demo **code**
+  (20 html/js/css files) is intact, which is the part that teaches the
+  technique.
+
 ## Design references (`docs/design-references/`)
 
 - Source: https://github.com/rohitg00/awesome-claude-design
@@ -91,3 +117,9 @@ The skills in this directory are third-party, vendored under their original lice
   if the art-directed angle is preferred — not alongside.
 - https://github.com/anthropics/skills `frontend-design` — impeccable started
   from this skill and expands it, so vendoring both is redundant.
+- https://github.com/darkroomengineering/cc-settings — MIT, from the studio that
+  actually builds Lenis. Genuinely strong, but it is a whole studio operating
+  system (its own CLAUDE.md, rules, hooks, ~40 workflow skills installed to
+  `~/.claude`) and its hooks would fight impeccable's. Its value here was
+  pointing to the Lenis material, which `cinematic-gsap-lenis-motion-system`
+  now covers. Worth revisiting as a *workflow* layer, separately.
