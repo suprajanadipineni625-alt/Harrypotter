@@ -388,33 +388,344 @@ const INK = /* glsl */ `
   }
 `
 
+
+/**
+ * King's Cross — the white.
+ *
+ * The prose says "white, in every direction". It was rendering near-black,
+ * because it reused the generic void layer. This is the only inverted scene in
+ * the site and the cheapest thing in it: a white field with the faintest
+ * suggestion of a vaulted roof.
+ */
+const WHITE_VOID = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    // Not flat white — a soft radial falloff keeps it from reading as a bug.
+    float d = length(uv - vec2(0.5, 0.55));
+    vec3 col = vec3(1.0) - vec3(0.10, 0.09, 0.07) * smoothstep(0.1, 0.9, d);
+    // Ghost of an arched station roof, barely there.
+    float arch = abs(uv.y - (0.86 - pow(abs(uv.x - 0.5) * 2.0, 2.0) * 0.22));
+    col -= vec3(0.05) * (1.0 - smoothstep(0.0, 0.012, arch));
+    float haze = fbm(uv * 4.0 + uTime * 0.008) * 0.03;
+    gl_FragColor = vec4(col - haze, uOpacity);
+  }
+`
+
+/**
+ * The station trainshed — Platform nine and three quarters.
+ *
+ * Was drawing the castle, which is simply the wrong building. A Victorian
+ * iron-and-glass shed: repeating arched trusses receding to a vanishing point,
+ * steam pooling at platform level.
+ */
+const STATION = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec2 p = vec2((uv.x - 0.5) * 2.0, uv.y);
+    vec3 col = uBg * 0.55;
+
+    // The great arch of the roof.
+    float roof = 0.92 - pow(abs(p.x) / 1.05, 2.0) * 0.55;
+    float inside = step(uv.y, roof);
+    col = mix(uBg * 1.8, col, inside);
+
+    // Ribs of the truss, converging with depth.
+    float ribs = abs(fract(p.x * 7.0 + 0.5) - 0.5);
+    float rib = (1.0 - smoothstep(0.02, 0.06, ribs)) * inside
+              * step(0.25, uv.y);
+    col = mix(col, uBg * 0.16, rib);
+
+    // Glazing between the ribs, catching cold light.
+    float glaze = smoothstep(0.45, 0.95, uv.y) * inside * (1.0 - rib);
+    col += uInk * glaze * 0.10;
+
+    // The engine's firebox, low and warm, the only warm note.
+    float fire = exp(-length(vec2(p.x * 1.6, (uv.y - 0.16) * 4.0)) * 3.0);
+    col += uAccent * fire * (0.85 + 0.15 * sin(uTime * 2.2));
+
+    // Steam rolling along the platform.
+    float steam = fbm(vec2(uv.x * 4.0 - uTime * 0.05, uv.y * 9.0));
+    col = mix(col, uInk * 0.5, smoothstep(0.35, 0.0, uv.y) * steam * 0.45);
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/**
+ * The Hall of Prophecy — shelves receding into black, each holding a small
+ * glowing sphere. Was drawing the Great Hall's candles, which is a different
+ * kind of light entirely: candles drift, these are ranked and still.
+ *
+ * `uLocal` drives the shatter: past the midpoint the orbs start going out.
+ */
+const PROPHECY = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec3 col = uBg * 0.35;
+
+    // Perspective rows receding to a centre vanishing point.
+    vec2 c = uv - vec2(0.5, 0.52);
+    float depth = 1.0 / max(abs(c.y) * 4.0 + 0.06, 0.06);
+    vec2 q = vec2(c.x * depth, depth);
+
+    vec2 cell = floor(vec2(q.x * 2.5, q.y * 1.6));
+    vec2 f = fract(vec2(q.x * 2.5, q.y * 1.6)) - 0.5;
+    float r = hash(cell);
+
+    float fade = smoothstep(9.0, 0.6, depth);
+
+    // Shelf boards.
+    float shelf = (1.0 - smoothstep(0.03, 0.09, abs(f.y - 0.42))) * fade;
+    col += uInk * shelf * 0.05;
+
+    // The orbs. After the midpoint they begin to fall dark.
+    float alive = step(uLocal * 1.4, r + 0.35);
+    float orb = exp(-length(f * vec2(1.0, 1.35)) * 7.0) * step(0.35, r);
+    float pulse = 0.7 + 0.3 * sin(uTime * 0.8 + r * 30.0);
+    col += mix(uAccent, uInk, 0.4) * orb * fade * pulse * alive * 1.6;
+
+    // Darkness closing in from every edge — the hall has no visible walls.
+    col *= 1.0 - smoothstep(0.35, 0.95, length(c) * 1.6);
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/**
+ * The cave — black water, a ring of green fire, hands beneath the surface.
+ *
+ * Was reusing the generic water layer, which has caustics and light from above.
+ * This has neither: the only light is the ring, and everything below it is
+ * opaque.
+ */
+const CAVE = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec3 col = uBg * 0.10;
+
+    // The ring of fire, sitting on the water at mid-height.
+    vec2 c = (uv - vec2(0.5, 0.46)) * vec2(1.0, 2.6);
+    float ring = abs(length(c) - 0.26);
+    float flicker = 0.82 + 0.18 * sin(uTime * 3.4 + uv.x * 12.0);
+    col += uAccent * (1.0 - smoothstep(0.0, 0.055, ring)) * flicker * 2.2;
+    // Its glow on the air.
+    col += uAccent * exp(-ring * 6.0) * 0.35 * flicker;
+
+    // Still black water below, holding a broken reflection.
+    float water = smoothstep(0.46, 0.42, uv.y);
+    float ripple = fbm(vec2(uv.x * 12.0, uv.y * 30.0 - uTime * 0.15));
+    col = mix(col, col * 0.30 + uAccent * ripple * 0.10, water);
+
+    // Shapes rising through it, never resolving.
+    float hands = smoothstep(0.62, 0.95, fbm(vec2(uv.x * 7.0, uv.y * 5.0 - uTime * 0.06)));
+    col += uAccent * hands * water * 0.08;
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/** The graveyard — leaning stones and low mist, not a ruined castle. */
+const GRAVEYARD = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec2 p = vec2((uv.x - 0.5) * 2.0, uv.y);
+    vec3 col = uBg * 0.4;
+    float m = 0.0;
+
+    // Rows of headstones, smaller and paler with depth.
+    for (int i = 0; i < 14; i++) {
+      float fi = float(i);
+      float r = hash(vec2(fi, 7.0));
+      float row = floor(fi / 5.0);
+      float base = 0.06 + row * 0.055;
+      float x = -0.95 + fract(r * 3.7) * 1.9;
+      float w = (0.020 + r * 0.016) * (1.0 - row * 0.2);
+      float h = (0.075 + r * 0.055) * (1.0 - row * 0.22);
+      // Leaning, because a straight row of stones looks like a fence.
+      float lean = (r - 0.5) * 0.22;
+      float px = p.x - x - (p.y - base) * lean;
+      float stone = step(abs(px), w) * step(base, p.y) * step(p.y, base + h);
+      // Rounded tops.
+      stone = max(stone, step(length(vec2(px, (p.y - base - h)) * vec2(1.0, 1.0)), w));
+      m = max(m, stone * (1.0 - row * 0.15));
+    }
+
+    col = mix(col, uBg * 0.14, m);
+
+    // Ground mist swallowing their feet.
+    float mist = fbm(vec2(uv.x * 5.0 + uTime * 0.02, uv.y * 12.0));
+    col = mix(col, uInk * 0.22, smoothstep(0.22, 0.02, uv.y) * (0.4 + mist * 0.5));
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/** Gringotts — a vault of gold receding into dark. */
+const VAULT = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec3 col = uBg * 0.16;
+
+    // Heaped coins: many small bright specks, denser toward the floor.
+    float heap = smoothstep(0.55, 0.0, uv.y);
+    for (int i = 0; i < 3; i++) {
+      float fi = float(i);
+      float sc = 40.0 + fi * 34.0;
+      vec2 g = vec2(uv.x * sc, uv.y * sc * 1.6);
+      vec2 cell = floor(g);
+      float r = hash(cell + fi * 13.0);
+      vec2 f = fract(g) - 0.5;
+      float coin = (1.0 - smoothstep(0.10, 0.30, length(f))) * step(0.55, r);
+      float glint = 0.5 + 0.5 * sin(uTime * 1.4 + r * 40.0);
+      col += uAccent * coin * heap * glint * (0.5 + r * 0.9);
+    }
+
+    // Vault walls closing in.
+    col *= 1.0 - smoothstep(0.4, 1.0, abs(uv.x - 0.5) * 2.0) * 0.75;
+    // Distant torch, high.
+    col += uAccent * exp(-length(uv - vec2(0.5, 0.88)) * 5.0) * 0.5;
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/** Fiendfyre — cursed fire, rolling and animal-shaped at the edges. */
+const CURSED_FIRE = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+
+    // Layered rising noise. Domain-warping the second octave by the first is
+    // what gives fire its curling, self-devouring look rather than a flat wash.
+    vec2 q = vec2(uv.x * 3.0, uv.y * 2.4 - uTime * 0.35);
+    float n1 = fbm(q);
+    float n2 = fbm(q * 2.1 + vec2(n1 * 1.6, -uTime * 0.5));
+    float fire = pow(smoothstep(0.25, 0.95, n1 * 0.55 + n2 * 0.65), 1.5);
+    fire *= smoothstep(0.0, 0.45, uv.y) * smoothstep(1.05, 0.35, uv.y);
+
+    vec3 col = uBg * 0.14;
+    col += uAccent * fire * 2.0;
+    // White-hot core where the two octaves agree.
+    col += vec3(1.0, 0.92, 0.72) * pow(fire, 3.0) * 0.85;
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/** A lit tent in an enormous empty dark. */
+const TENT = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec2 p = vec2((uv.x - 0.5) * 2.0, uv.y);
+    vec3 col = uBg * 0.42;
+
+    // Ground.
+    col = mix(col, uBg * 0.18, smoothstep(0.26, 0.20, uv.y));
+
+    // The tent: a small triangle, deliberately tiny in the frame.
+    float t = clamp((p.y - 0.20) / 0.13, 0.0, 1.0);
+    float tent = step(abs(p.x + 0.18), 0.085 * (1.0 - t))
+               * step(0.20, p.y) * step(p.y, 0.33);
+    col = mix(col, uBg * 0.10, tent);
+    // Lit from within.
+    col += uAccent * exp(-length(vec2((p.x + 0.18) * 3.0, (uv.y - 0.245) * 7.0)) * 3.0)
+         * (0.85 + 0.15 * sin(uTime * 1.8));
+
+    // Snow.
+    for (int i = 0; i < 2; i++) {
+      float fi = float(i);
+      float sc = 26.0 + fi * 18.0;
+      vec2 g = vec2(uv.x * sc + sin(uv.y * 3.0 + uTime * 0.2) * 0.6,
+                    uv.y * sc - uTime * (0.5 + fi * 0.4));
+      vec2 f = fract(g) - 0.5;
+      float r = hash(floor(g) + fi * 9.0);
+      col += uInk * (1.0 - smoothstep(0.06, 0.20, length(f))) * step(0.86, r) * 0.5;
+    }
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/** A train window at night, frost creeping in from its edges. */
+const TRAIN = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec3 col = uBg * 0.30;
+
+    // Window aperture.
+    float win = step(0.10, uv.x) * step(uv.x, 0.90)
+              * step(0.18, uv.y) * step(uv.y, 0.86);
+    // Outside: dark, with lights streaking past.
+    float streak = smoothstep(0.90, 1.0, fbm(vec2(uv.x * 3.0 - uTime * 1.1, uv.y * 22.0)));
+    col = mix(col, uBg * 0.9 + uAccent * streak * 0.5, win);
+
+    // Frost growing inward from the frame — crystalline, not smooth.
+    float edge = min(min(uv.x - 0.10, 0.90 - uv.x), min(uv.y - 0.18, 0.86 - uv.y));
+    float crystal = fbm(uv * 24.0) * 0.5 + fbm(uv * 60.0) * 0.5;
+    float frost = smoothstep(0.30, 0.0, edge / max(crystal, 0.25));
+    col = mix(col, uInk * 0.62, frost * win * 0.85);
+
+    // The frame itself.
+    col = mix(uBg * 0.12, col, win);
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
+/** One tall mirror in an empty dark room. */
+const MIRROR = /* glsl */ `
+  void main() {
+    vec2 uv = vUv;
+    vec3 col = uBg * 0.16;
+
+    vec2 c = uv - vec2(0.5, 0.48);
+    // Arched top, flat base.
+    float frame = max(abs(c.x) - 0.17, abs(c.y) - 0.30);
+    float arch = length(vec2(c.x, max(0.0, c.y - 0.14))) - 0.17;
+    float shape = min(max(frame, -0.0), arch);
+    float inside = 1.0 - smoothstep(-0.004, 0.004, shape);
+
+    // The glass: light spilling out, no image in it. What it shows is the one
+    // thing we deliberately cannot draw.
+    float glow = exp(-length(c * vec2(2.2, 1.2)) * 2.4);
+    col += mix(uInk, uAccent, 0.35) * inside * glow * 1.1;
+
+    // Gilt edge.
+    float edge = 1.0 - smoothstep(0.004, 0.016, abs(shape));
+    col += uAccent * edge * 0.65;
+
+    // Its light on the floor.
+    col += uAccent * exp(-length(vec2(c.x * 1.4, (uv.y - 0.12) * 5.0)) * 3.0) * 0.20;
+
+    gl_FragColor = vec4(col, uOpacity);
+  }
+`
+
 /* --------------------------------------------------------------- table */
 
 type Composition = Partial<Record<LayerDepth, string>>
 
 const COMPOSITIONS: Record<ArtKind, Composition> = {
   letters: { back: SKY, mid: CORRIDOR, fore: LETTERS },
-  platform: { back: SKY, mid: CASTLE, fore: TREES },
+  platform: { back: SKY, mid: STATION, fore: TREES },
   greathall: { back: VOID_LAYER, mid: GREAT_HALL, fore: TREES },
   chess: { back: VOID_LAYER, mid: CHESS },
-  mirror: { back: VOID_LAYER, mid: CORRIDOR },
+  mirror: { back: VOID_LAYER, mid: MIRROR },
   castle: { back: SKY, mid: CASTLE, fore: TREES },
   corridor: { back: VOID_LAYER, mid: CORRIDOR },
   chamber: { back: VOID_LAYER, mid: CORRIDOR, fore: WATER },
-  train: { back: SKY, mid: CORRIDOR },
+  train: { back: VOID_LAYER, mid: TRAIN },
   lake: { back: SKY, mid: WATER },
-  graveyard: { back: SKY, mid: RUIN, fore: TREES },
-  prophecy: { back: VOID_LAYER, mid: GREAT_HALL },
-  cave: { back: VOID_LAYER, mid: WATER },
+  graveyard: { back: SKY, mid: GRAVEYARD, fore: TREES },
+  prophecy: { back: VOID_LAYER, mid: PROPHECY },
+  cave: { back: VOID_LAYER, mid: CAVE },
   tower: { back: SKY, mid: CASTLE },
-  tent: { back: SKY, mid: TREES },
+  tent: { back: SKY, mid: TENT },
   ice: { back: SKY, mid: WATER, fore: TREES },
   brothers: { back: INK },
-  gringotts: { back: VOID_LAYER, mid: CORRIDOR },
-  fiendfyre: { back: VOID_LAYER, mid: RUIN },
+  gringotts: { back: VOID_LAYER, mid: VAULT },
+  fiendfyre: { back: VOID_LAYER, mid: CURSED_FIRE },
   battle: { back: SKY, mid: RUIN, fore: TREES },
   forest: { back: SKY, mid: TREES, fore: TREES },
-  kingscross: { back: VOID_LAYER },
+  kingscross: { back: WHITE_VOID },
   dawn: { back: SKY, mid: CASTLE, fore: TREES },
 }
 

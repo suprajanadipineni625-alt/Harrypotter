@@ -18,14 +18,17 @@ export function Prose({
   scene,
   opacity,
   isPartOpening,
+  light = false,
 }: {
   part: Part
   scene: Scene
   opacity: number
   isPartOpening: boolean
+  /** Scene drawn on a light ground — invert the reading layer. */
+  light?: boolean
 }) {
   return (
-    <div className="prose" style={{ opacity }} aria-live="polite">
+    <div className="prose" data-light={light} style={{ opacity }} aria-live="polite">
       {isPartOpening && (
         <header className="prose__part">
           <p className="prose__partnum">Part {part.n}</p>
@@ -46,10 +49,17 @@ export function Prose({
   )
 }
 
-export function HorcruxCounter({ destroyed }: { destroyed: number }) {
+export function HorcruxCounter({
+  destroyed,
+  light = false,
+}: {
+  destroyed: number
+  light?: boolean
+}) {
   return (
     <div
       className="horcrux"
+      data-light={light}
       aria-label={`${destroyed} of ${HORCRUX_TOTAL} Horcruxes destroyed`}
     >
       {Array.from({ length: HORCRUX_TOTAL }, (_, i) => (

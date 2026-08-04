@@ -166,3 +166,31 @@
     transition: none;
   }
 }
+
+/* ------------------------------------------------- light-ground scenes */
+
+/*
+ * Two scenes invert: King's Cross is pure white and the Three Brothers is
+ * parchment. Cream text with a dark glow is unreadable on both — the copy
+ * effectively disappears, and so does the Horcrux counter, on the exact scene
+ * where the counter finally reads seven of seven.
+ */
+.prose[data-light='true'] {
+  color: #14100c;
+  text-shadow: 0 1px 18px rgb(255 255 255 / 0.9);
+}
+
+.horcrux[data-light='true'] .horcrux__mark {
+  border-color: #14100c;
+  background: #14100c;
+}
+
+.horcrux[data-light='true'] .horcrux__mark[data-out='true'] {
+  background: transparent;
+  opacity: 0.35;
+}
+
+.progress-note[data-light='true'] {
+  color: #14100c;
+  opacity: 0.5;
+}

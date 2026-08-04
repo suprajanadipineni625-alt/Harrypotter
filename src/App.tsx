@@ -89,11 +89,12 @@ function Experience() {
         scene={scene}
         opacity={proseOpacity}
         isPartOpening={isPartOpening}
+        light={scene.light === true}
       />
 
-      <HorcruxCounter destroyed={destroyed} />
+      <HorcruxCounter destroyed={destroyed} light={scene.light === true} />
 
-      <p className="progress-note" aria-hidden="true">
+      <p className="progress-note" data-light={scene.light === true} aria-hidden="true">
         Part {part.n} of {PARTS.length}
       </p>
 

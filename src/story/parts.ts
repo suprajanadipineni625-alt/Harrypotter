@@ -49,6 +49,13 @@ export interface Scene {
   image?: { back: string; mid: string; fore: string }
   /** Set when this scene destroys a Horcrux. 1-7, in destruction order. */
   horcrux?: number
+  /**
+   * True for scenes drawn on a LIGHT ground — King's Cross, the parchment of
+   * the Three Brothers. The reading layer is cream on dark everywhere else, so
+   * without this the text and the Horcrux counter vanish completely on exactly
+   * the two scenes that invert.
+   */
+  light?: boolean
 }
 
 export interface Part {
@@ -385,6 +392,7 @@ export const PARTS: Part[] = [
         prose:
           'Three men, a river, and a bargain with something that does not bargain. Only one of them understood what he had been given, and he was the one who gave it back.',
         art: 'brothers',
+        light: true,
       },
       {
         id: 'dobby',
@@ -454,6 +462,7 @@ export const PARTS: Part[] = [
         prose:
           'White, in every direction, and a choice about whether to get back on the train.',
         art: 'kingscross',
+        light: true,
       },
       {
         id: 'lastmove',
