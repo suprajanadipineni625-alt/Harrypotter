@@ -20,14 +20,19 @@ import sharp from 'sharp'
 const DIR = process.argv[2] ?? 'public/scenes'
 
 /**
- * 1600px wide is plenty.
+ * Quality is set for a lazily-loaded asset, not a bundled one.
  *
- * The backdrop sits at the furthest parallax depth, behind fog and a particle
- * layer, and is never the sharp thing on screen. Beyond this the extra pixels
- * cost bytes and buy nothing.
+ * Backdrops are fetched per scene as you reach them — arriving downloads the
+ * code plus ONE image. So the meaningful number is the size of a single
+ * backdrop, not the size of all forty-seven, and compressing hard against a
+ * whole-library total was optimising the wrong quantity.
+ *
+ * At 1920 and quality 88 a backdrop is roughly 250 kB, which is one photo. The
+ * previous 1600/80 was visibly softer for no benefit — especially on portrait
+ * sources, where cropping to landscape discards about half the pixels and then
+ * upscales what remains.
  */
-const MAX_WIDTH = 1600
-const QUALITY = 80
+const QUALITY = 88
 
 /**
  * Every backdrop is normalised to one landscape aspect.
@@ -43,7 +48,7 @@ const QUALITY = 80
  * image rather than by arithmetic at 60fps. Centre crop, because these
  * compositions put their subject in the middle.
  */
-const TARGET = { width: 1600, height: 1000 }
+const TARGET = { width: 1920, height: 1200 }
 
 const sources = readdirSync(DIR).filter((f) =>
   ['.png', '.jpg', '.jpeg'].includes(extname(f).toLowerCase()),

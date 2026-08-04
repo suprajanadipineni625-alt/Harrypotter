@@ -77,6 +77,16 @@ const entryRefs = (() => {
   }
 })()
 
+/**
+ * Scene backdrops are fetched per scene as you reach them, not on arrival.
+ *
+ * Verified in a browser: loading the site pulls exactly one backdrop, and the
+ * next is requested on scrolling to it. Counting all forty-seven against an
+ * arrival budget therefore measures a download nobody performs, and pushed
+ * image quality down for no benefit. They are reported separately.
+ */
+const isProgressive = (p) => p.includes('scenes/')
+
 const isOptIn = (p) => {
   if (p.includes('vendor/')) return true
   if (!entryRefs) return false
@@ -84,9 +94,17 @@ const isOptIn = (p) => {
   return extname(p) === '.js' && !entryRefs.has(p.split('/').pop())
 }
 
+let progressiveBytes = 0
+let progressiveCount = 0
+
 for (const f of files) {
   if (isOptIn(f.path)) {
     optInBytes += f.size
+    continue
+  }
+  if (isProgressive(f.path)) {
+    progressiveBytes += f.size
+    progressiveCount++
     continue
   }
   if (CODE.has(extname(f.path))) {
@@ -110,6 +128,16 @@ console.log(`  assets         ${kb(assetBytes)}`)
 console.log(`  ${'-'.repeat(34)}`)
 console.log(`  shipped        ${kb(total)}  of ${kb(BUDGET)}  (${pct}%)`)
 console.log('')
+if (progressiveCount) {
+  const avg = progressiveBytes / progressiveCount
+  console.log(
+    `  backdrops      ${kb(progressiveBytes)} across ${progressiveCount}, avg ${kb(avg)} each`,
+  )
+  console.log(`                 fetched ONE AT A TIME as you scroll, not on arrival`)
+  console.log(`  arrival cost   ${kb(total + avg)}   (code + the opening backdrop)`)
+  console.log('')
+}
+
 if (optInBytes) {
   console.log(`  opt-in         ${kb(optInBytes)}   hand tracking; fetched ONLY on camera consent`)
   console.log('                 not counted against the budget above')
