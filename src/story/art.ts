@@ -710,6 +710,7 @@ const COMPOSITIONS: Record<ArtKind, Composition> = {
   chess: { back: VOID_LAYER, mid: CHESS },
   mirror: { back: VOID_LAYER, mid: MIRROR },
   castle: { back: SKY, mid: CASTLE, fore: TREES },
+  // Scene id 'castle' is the opening establishing shot and shares this.
   corridor: { back: VOID_LAYER, mid: CORRIDOR },
   chamber: { back: VOID_LAYER, mid: CORRIDOR, fore: WATER },
   train: { back: VOID_LAYER, mid: TRAIN },

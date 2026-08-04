@@ -79,6 +79,13 @@ export const PARTS: Part[] = [
     accent: '#e8a33d',
     scenes: [
       {
+        id: 'castle',
+        title: 'The castle',
+        prose:
+          'It stands on a crag above a black loch, and it has stood there for a thousand years. Every window you can see belongs to somebody. The story that follows takes seven years, and it begins with a boy who does not know the place exists.',
+        art: 'castle',
+      },
+      {
         id: 'letters',
         title: 'The letters',
         prose:
