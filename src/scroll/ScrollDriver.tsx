@@ -3,7 +3,7 @@ import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { splitProgress, ZERO_PROGRESS, type Progress } from '../core/progress'
-import { MOVEMENT_COUNT } from '../movements/movements'
+import { SCENE_COUNT } from '../story/parts'
 import { prefersReducedMotion } from '../core/tier'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -57,8 +57,8 @@ export function ScrollDriver({ children }: { children: React.ReactNode }) {
       end: 'max',
       onUpdate: (self) => {
         const global = self.progress
-        const { movement, local } = splitProgress(global, MOVEMENT_COUNT)
-        setProgress({ global, movement, local, time: timeRef.current })
+        const { index, local } = splitProgress(global, SCENE_COUNT)
+        setProgress({ global, index, local, time: timeRef.current })
       },
     })
 

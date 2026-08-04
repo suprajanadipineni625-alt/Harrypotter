@@ -7,7 +7,6 @@ import {
 } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import type { QualityProfile } from '../core/tier'
-import type { ResolvedState } from '../movements/interpolate'
 
 /**
  * Tier-gated post-processing.
@@ -26,10 +25,12 @@ import type { ResolvedState } from '../movements/interpolate'
  */
 export function Post({
   profile,
-  state,
+  bloom,
+  vignette,
 }: {
   profile: QualityProfile
-  state: ResolvedState
+  bloom: number
+  vignette: number
 }) {
   // `multisampling: 0` — MSAA on the composer is expensive and mostly wasted on
   // a scene made of points and fog.
@@ -41,7 +42,7 @@ export function Post({
     <EffectComposer {...composerProps}>
       {profile.bloom ? (
         <Bloom
-          intensity={state.bloom}
+          intensity={bloom}
           // A LOW threshold blooms everything, including mid-tones, which is
           // how a scene made of additive points turns into a white field. This
           // sits high on purpose: only genuinely bright cores glow, and the
@@ -57,7 +58,7 @@ export function Post({
 
       <Vignette
         offset={0.25}
-        darkness={state.vignette}
+        darkness={vignette}
         blendFunction={BlendFunction.NORMAL}
       />
 

@@ -1,93 +1,109 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ScrollDriver, useProgress } from './scroll/ScrollDriver'
-import { Scene } from './scene/Scene'
+import { StoryRoot } from './story/StoryRoot'
+import { Prose, HorcruxCounter } from './story/Prose'
 import { Post } from './scene/Post'
 import { PerfPanel, PerfProbe, type PerfSample } from './core/PerfOverlay'
 import { detectTier, prefersReducedMotion, profileFor } from './core/tier'
-import { MOVEMENTS, MOVEMENT_COUNT } from './movements/movements'
-import { resolveState } from './movements/interpolate'
-import { useCastControl } from './cast/CastControl'
+import { PARTS, SCENES, SCENE_COUNT } from './story/parts'
 import './App.css'
 
 /**
- * Phase 0 + 1 shell.
+ * An illustrated story in eight parts.
  *
- * There is deliberately almost nothing to look at yet. What this proves is the
- * machine: scroll drives progress, progress drives one persistent scene through
- * eight parameter states, and the whole thing holds 60fps before any content
- * exists. See docs/PLAN.md.
+ * Scroll drives progress; progress selects a scene and how far through it you
+ * are; the scene draws itself as parallax layers with a paragraph beside it.
+ * See docs/STORY.md.
  */
+
+/** How many Horcruxes have been destroyed by the time you reach scene `i`. */
+function destroyedBy(i: number): number {
+  let n = 0
+  for (let k = 0; k <= i && k < SCENES.length; k++) {
+    if (SCENES[k].scene.horcrux) n++
+  }
+  return n
+}
 
 function Experience() {
   const progress = useProgress()
   const [sample, setSample] = useState<PerfSample | null>(null)
+  const [pointer, setPointer] = useState<[number, number]>([0, 0])
+  const raf = useRef(0)
 
   const profile = useMemo(() => profileFor(detectTier()), [])
   const reduced = useMemo(prefersReducedMotion, [])
   const onSample = useCallback((s: PerfSample) => setSample(s), [])
 
-  const state = resolveState(progress)
-  const current = MOVEMENTS[progress.movement]
+  // Pointer drives a small look-around drift. Throttled to one frame, and
+  // disabled entirely under reduced motion.
+  useEffect(() => {
+    if (reduced) return
+    let latest: [number, number] = [0, 0]
+    const onMove = (e: PointerEvent) => {
+      latest = [
+        (e.clientX / window.innerWidth - 0.5) * 2,
+        -(e.clientY / window.innerHeight - 0.5) * 2,
+      ]
+      if (!raf.current) {
+        raf.current = requestAnimationFrame(() => {
+          raf.current = 0
+          setPointer(latest)
+        })
+      }
+    }
+    window.addEventListener('pointermove', onMove)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      if (raf.current) cancelAnimationFrame(raf.current)
+    }
+  }, [reduced])
 
-  // Movement V is the cast beat. Hand tracking is offered on the high tier
-  // only: it is a real GPU cost on top of a full scene, and the pointer path
-  // gives everyone else the identical result.
-  const inCast = progress.movement === 4
-  const cast = useCastControl(inCast, profile.tier === 'high')
+  const i = Math.min(progress.index, SCENES.length - 1)
+  const { part, scene } = SCENES[i]
+  const isPartOpening = part.scenes[0].id === scene.id
+  const destroyed = destroyedBy(i)
+
+  // Prose fades as a scene ends so the next arrives clean.
+  const proseOpacity = progress.local > 0.82 ? 1 - (progress.local - 0.82) / 0.18 : 1
 
   return (
     <>
       <div className="canvas-layer">
         <Canvas
           dpr={[1, profile.maxPixelRatio]}
-          camera={{ fov: 42, position: [0, 0, 9] }}
+          camera={{ fov: 46, position: [0, 0, 9.4] }}
           gl={{ antialias: profile.tier !== 'low', powerPreference: 'high-performance' }}
         >
-          <Scene progress={progress} profile={profile} cast={cast.value} />
-          <Post profile={profile} state={state} />
+          <StoryRoot progress={progress} profile={profile} pointer={pointer} />
+          <Post profile={profile} bloom={0.55} vignette={0.4} />
           <PerfProbe onSample={onSample} />
         </Canvas>
       </div>
 
-      {/* Scroll track. Each movement gets one viewport of scroll for now;
-          real pacing arrives with content in Phase 2. */}
-      <div className="scroll-track" style={{ height: `${MOVEMENT_COUNT * 100}vh` }} />
+      <div className="scroll-track" style={{ height: `${SCENE_COUNT * 110}vh` }} />
 
-      <div className="hud" aria-live="polite">
-        <p className="hud__numeral">{current.numeral}</p>
-        <h1 className="hud__title">{current.title}</h1>
-        <p className="hud__intent">{current.intent}</p>
-      </div>
+      <Prose
+        part={part}
+        scene={scene}
+        opacity={proseOpacity}
+        isPartOpening={isPartOpening}
+      />
 
-      <div className="rail" aria-hidden="true">
-        {MOVEMENTS.map((m, i) => (
-          <span
-            key={m.id}
-            className="rail__tick"
-            data-active={i === progress.movement}
-            style={{
-              transform: `scaleX(${
-                i === progress.movement ? state.blend * 0.5 + 0.5 : 0.18
-              })`,
-            }}
-          />
-        ))}
-      </div>
+      <HorcruxCounter destroyed={destroyed} />
 
-      {cast.ui}
-
-      {reduced && (
-        <p className="reduced-note">Reduced motion is on — the experience is calmed.</p>
-      )}
+      <p className="progress-note" aria-hidden="true">
+        Part {part.n} of {PARTS.length}
+      </p>
 
       <PerfPanel
         sample={sample}
         profile={profile}
-        movementTitle={`${current.numeral} · ${current.title}`}
+        movementTitle={`${part.n} · ${scene.title}`}
         globalProgress={progress.global}
-        castValue={cast.value}
-        castSource={cast.source}
+        castValue={null}
+        castSource={`${destroyed}/7 horcruxes`}
       />
     </>
   )

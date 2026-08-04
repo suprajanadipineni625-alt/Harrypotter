@@ -20,9 +20,9 @@
 export interface Progress {
   /** 0..1 across the entire experience. */
   global: number
-  /** Index of the movement currently on screen. */
-  movement: number
-  /** 0..1 within the current movement. */
+  /** Index of the scene currently on screen. */
+  index: number
+  /** 0..1 within the current scene. */
   local: number
   /**
    * Monotonic "seconds" for ambient motion. Supplied by the driver:
@@ -34,23 +34,23 @@ export interface Progress {
 
 export const ZERO_PROGRESS: Progress = {
   global: 0,
-  movement: 0,
+  index: 0,
   local: 0,
   time: 0,
 }
 
 /**
- * Split a global 0..1 into a movement index plus local 0..1.
- * The final movement includes global === 1 rather than overflowing.
+ * Split a global 0..1 into a scene index plus local 0..1.
+ * The final scene includes global === 1 rather than overflowing.
  */
 export function splitProgress(global: number, count: number): {
-  movement: number
+  index: number
   local: number
 } {
   const clamped = Math.min(Math.max(global, 0), 1)
   const scaled = clamped * count
-  const movement = Math.min(Math.floor(scaled), count - 1)
-  return { movement, local: scaled - movement }
+  const index = Math.min(Math.floor(scaled), count - 1)
+  return { index, local: scaled - index }
 }
 
 /** Linear interpolation. */
