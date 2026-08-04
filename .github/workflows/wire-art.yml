@@ -1,0 +1,58 @@
+name: Wire uploaded art
+
+# Uploading an image should be the ONLY step.
+#
+# Drop `letters.png` into public/scenes/ — from the GitHub web UI, from a
+# phone, however — and this points the matching scene at it and commits. The
+# deploy workflow then republishes on that commit, so the change is live
+# without anyone running a command or opening a terminal.
+#
+# Scenes with no image keep drawing procedurally, so a partial set is never a
+# broken site.
+
+on:
+  push:
+    paths:
+      - 'public/scenes/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# One at a time. Two uploads in quick succession would otherwise race on the
+# same file and one would lose.
+concurrency:
+  group: wire-art
+  cancel-in-progress: false
+
+jobs:
+  wire:
+    runs-on: ubuntu-latest
+    # Without this guard the job's own commit re-triggers the workflow forever.
+    if: "!contains(github.event.head_commit.message, '[wire-art]')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Point scenes at their images
+        run: node scripts/wire-art.mjs
+
+      - name: Commit
+        run: |
+          git config user.name  'Claude'
+          git config user.email 'noreply@anthropic.com'
+          git add src/story/parts.ts
+          if git diff --staged --quiet; then
+            echo 'Nothing to wire — scenes already point at the right art.'
+            exit 0
+          fi
+          git commit -m 'Wire uploaded scene art [wire-art]
+
+          Points scenes at the backdrops now present in public/scenes/.
+          Scenes without one keep drawing procedurally.'
+          git push

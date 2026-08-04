@@ -35,11 +35,28 @@ export function StoryScene({
   const composition = compositionFor(scene.art)
   const palette = { background: part.background, ink: part.ink, accent: part.accent }
 
+  /**
+   * A painted backdrop IS the scene.
+   *
+   * The procedural mid layer draws the same subject — the corridor, the
+   * castle, the water — and it draws it opaquely, so leaving it on top of an
+   * uploaded illustration hides the illustration completely. The person who
+   * generated the art would see no change and reasonably conclude the upload
+   * failed.
+   *
+   * So when a back image exists, procedural mid is dropped. The FOREGROUND
+   * stays: that is the animated layer — tumbling letters, drifting snow,
+   * framing trees — which is exactly what a static image cannot do, and what
+   * keeps a painted scene from looking like a photograph glued to the screen.
+   */
+  const hasPaintedBack = Boolean(scene.image?.back)
+
   return (
     <group>
       {ORDER.map((depth) => {
         const image = scene.image?.[depth]
-        const shader = composition[depth]
+        const shader =
+          hasPaintedBack && depth === 'mid' && !image ? undefined : composition[depth]
         if (!image && !shader) return null
         return (
           <Layer
