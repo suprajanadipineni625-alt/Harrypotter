@@ -15,7 +15,8 @@
     "reel:render": "node scripts/render-reel.mjs",
     "art:generate": "node scripts/generate-art.mjs",
     "art:wire": "node scripts/wire-art.mjs",
-    "deploy:supabase": "node scripts/deploy-supabase.mjs dist"
+    "deploy:supabase": "node scripts/deploy-supabase.mjs dist",
+    "art:optimize": "node scripts/optimize-art.mjs"
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "^1.0.1",
@@ -40,6 +41,7 @@
     "oxlint": "^1.75.0",
     "playwright": "^1.62.1",
     "remotion": "^4.0.505",
+    "sharp": "^0.35.3",
     "typescript": "~6.0.2",
     "vite": "^8.2.0"
   }

@@ -63,8 +63,17 @@ permission is both a privacy leak and a single point of failure.
 
 ## Ledger
 
-| Asset | Movement | Source | Licence | Bytes | Notes |
+| Asset | Scene | Source | Licence | Bytes | Notes |
 |---|---|---|---|---|---|
 | `public/favicon.svg` | — | original | — | 233 | hand-written |
+| `public/scenes/castle.webp` | 1 · The castle | generated, descriptive prompt | original work | 64 000 | 2.72 MB PNG → WebP, −98% |
+| `public/scenes/dawn.webp` | 8 · Dawn | generated, descriptive prompt | original work | 30 000 | 1.75 MB PNG → WebP, −98% |
 
-*No third-party visual assets. Every movement is procedural.*
+Generated from prompts describing real architecture — Gothic revival, crag,
+viaduct, loch — never naming the franchise. Naming it was refused by the
+generator anyway; see docs/ART-BRIEF.md. Every remaining scene is procedural.
+
+**Uploads are converted before they ship.** `scripts/optimize-art.mjs` takes a
+2–3 MB PNG to roughly 30–70 kB of WebP, and deletes the original so the heavy
+version never enters git history. At 47 scenes the raw route would be over
+100 MB against a 10 MB budget; converted, the whole set fits comfortably.

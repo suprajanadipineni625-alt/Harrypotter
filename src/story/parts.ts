@@ -84,6 +84,7 @@ export const PARTS: Part[] = [
         prose:
           'It stands on a crag above a black loch, and it has stood there for a thousand years. Every window you can see belongs to somebody. The story that follows takes seven years, and it begins with a boy who does not know the place exists.',
         art: 'castle',
+        image: { back: 'scenes/castle.webp', mid: '', fore: '' },
       },
       {
         id: 'letters',
@@ -485,6 +486,7 @@ export const PARTS: Part[] = [
         prose:
           'First light on a broken castle, and a wand that had never really been his, and the extraordinary ordinary business of a morning that was allowed to happen.',
         art: 'dawn',
+        image: { back: 'scenes/dawn.webp', mid: '', fore: '' },
       },
     ],
   },

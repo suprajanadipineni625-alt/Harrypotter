@@ -39,6 +39,14 @@ jobs:
         with:
           node-version: 22
 
+      - run: npm ci
+
+      - name: Convert uploads to WebP
+        # Generated PNGs arrive at 2-3 MB. Converting here means a 3 MB upload
+        # from a phone is fine — it never reaches the shipped build at that
+        # size, and the heavy original never enters git history.
+        run: node scripts/optimize-art.mjs
+
       - name: Point scenes at their images
         run: node scripts/wire-art.mjs
 
@@ -46,7 +54,7 @@ jobs:
         run: |
           git config user.name  'Claude'
           git config user.email 'noreply@anthropic.com'
-          git add src/story/parts.ts
+          git add public/scenes src/story/parts.ts
           if git diff --staged --quiet; then
             echo 'Nothing to wire — scenes already point at the right art.'
             exit 0

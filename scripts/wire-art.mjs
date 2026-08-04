@@ -19,9 +19,23 @@ if (!existsSync(DIR)) {
   process.exit(0)
 }
 
-const have = new Set(
-  readdirSync(DIR).filter((f) => f.endsWith('.png')).map((f) => f.replace(/\.png$/, '')),
-)
+/**
+ * Map scene id -> filename.
+ *
+ * WebP is what actually ships (optimize-art.mjs converts uploads), but a raw
+ * PNG that has not been converted yet is still accepted so a fresh upload is
+ * never silently ignored.
+ */
+const IMAGES = new Map()
+for (const f of readdirSync(DIR)) {
+  const m = /^([a-z0-9]+)\.(webp|png|jpe?g)$/i.exec(f)
+  if (!m) continue
+  const [, id, ext] = m
+  // Prefer webp when both exist.
+  if (IMAGES.has(id) && ext.toLowerCase() !== 'webp') continue
+  IMAGES.set(id, f)
+}
+const have = IMAGES
 
 let src = await readFile(SRC, 'utf8')
 let wired = 0
@@ -31,11 +45,11 @@ let cleared = 0
 src = src.replace(
   /(\{\s*\n\s*id: '([a-z0-9]+)',[\s\S]*?)(\n(\s*)art: '[a-z]+',)(\n\s*image: \{[^}]*\},)?/g,
   (all, head, id, artLine, indent, existing) => {
-    const wants = have.has(id)
-    if (wants) {
+    const file = have.get(id)
+    if (file) {
       wired++
       // BASE_URL keeps the path correct under a Pages sub-path.
-      return `${head}${artLine}\n${indent}image: { back: 'scenes/${id}.png', mid: '', fore: '' },`
+      return `${head}${artLine}\n${indent}image: { back: 'scenes/${file}', mid: '', fore: '' },`
     }
     if (existing) cleared++
     return `${head}${artLine}`
@@ -44,4 +58,4 @@ src = src.replace(
 
 await writeFile(SRC, src)
 console.log(`wired ${wired} scene backdrop(s), cleared ${cleared} stale reference(s)`)
-console.log(have.size ? `images present: ${[...have].join(', ')}` : 'no images found')
+console.log(have.size ? `images present: ${[...have.values()].join(', ')}` : 'no images found')
