@@ -112,9 +112,14 @@ const vertex = /* glsl */ `
       // Slight vertical lift so it is not perfectly spherical — perfect
       // symmetry is the thing that makes procedural effects look procedural.
       p.y += sin(t * 2.0 + s) * 0.2 * uBurst + r * 1.1;
-      // Leading edge bright, trailing fade, plus a slow shimmer.
-      float edge = 1.0 - smoothstep(0.45, 1.0, uBurst);
-      vFade = edge * (0.35 + 0.35 * sin(t * 3.0 + s)) * (1.0 - d * 0.55);
+      // Brightness must HOLD at full cast, not fade out at the top.
+      //
+      // A burst that fades as it completes works for a value that sweeps 0->1
+      // and keeps going, but the cast is HELD: a visitor pressing and holding
+      // parks uBurst at 1.0, and a fade-at-the-top means their reward for
+      // holding is an empty screen. Ramp in, then stay.
+      float edge = smoothstep(0.0, 0.22, uBurst);
+      vFade = edge * (0.4 + 0.3 * sin(t * 3.0 + s)) * (1.0 - d * 0.55);
     }
 
     vec4 mv = modelViewMatrix * vec4(p, 1.0);

@@ -102,3 +102,76 @@
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------- cast */
+
+/*
+ * Sits opposite the movement title so the two never collide, and above the
+ * bottom 350px that Instagram's UI covers (BUILD-CONSTRAINTS §3).
+ */
+.cast {
+  position: fixed;
+  right: clamp(1.25rem, 5vw, 4.5rem);
+  bottom: clamp(4rem, 14vh, 8rem);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.6rem;
+  text-align: right;
+  color: #f4f0e8;
+  mix-blend-mode: difference;
+}
+
+.cast__hint {
+  margin: 0;
+  font: 400 0.78rem/1.4 ui-monospace, Menlo, monospace;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+.cast__offer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cast__button {
+  padding: 0.45rem 0.85rem;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  color: inherit;
+  font: 400 0.72rem/1 ui-monospace, Menlo, monospace;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: opacity 0.25s ease;
+}
+
+.cast__button:hover,
+.cast__button:focus-visible {
+  opacity: 1;
+}
+
+.cast__dismiss {
+  padding: 0.2rem 0.4rem;
+  background: none;
+  border: 0;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.45;
+}
+
+.cast__dismiss:hover,
+.cast__dismiss:focus-visible {
+  opacity: 0.9;
+}
+
+.cast__status {
+  margin: 0;
+  font: 400 0.7rem/1.4 ui-monospace, Menlo, monospace;
+  opacity: 0.55;
+}

@@ -9,9 +9,12 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "verify": "node scripts/verify.mjs",
-    "budget": "node scripts/budget.mjs"
+    "budget": "node scripts/budget.mjs",
+    "setup:gesture": "node scripts/setup-gesture.mjs",
+    "prebuild": "node scripts/setup-gesture.mjs"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^1.0.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.7.0",
     "@react-three/postprocessing": "^3.0.4",

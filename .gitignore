@@ -25,3 +25,6 @@ dist-ssr
 
 # verification artefacts
 .verify-shots/
+
+# staged at build time, never committed (20MB of runtime + model)
+public/vendor/

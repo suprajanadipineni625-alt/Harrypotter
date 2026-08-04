@@ -7,6 +7,7 @@ import { PerfPanel, PerfProbe, type PerfSample } from './core/PerfOverlay'
 import { detectTier, prefersReducedMotion, profileFor } from './core/tier'
 import { MOVEMENTS, MOVEMENT_COUNT } from './movements/movements'
 import { resolveState } from './movements/interpolate'
+import { useCastControl } from './cast/CastControl'
 import './App.css'
 
 /**
@@ -29,6 +30,12 @@ function Experience() {
   const state = resolveState(progress)
   const current = MOVEMENTS[progress.movement]
 
+  // Movement V is the cast beat. Hand tracking is offered on the high tier
+  // only: it is a real GPU cost on top of a full scene, and the pointer path
+  // gives everyone else the identical result.
+  const inCast = progress.movement === 4
+  const cast = useCastControl(inCast, profile.tier === 'high')
+
   return (
     <>
       <div className="canvas-layer">
@@ -37,7 +44,7 @@ function Experience() {
           camera={{ fov: 42, position: [0, 0, 9] }}
           gl={{ antialias: profile.tier !== 'low', powerPreference: 'high-performance' }}
         >
-          <Scene progress={progress} profile={profile} cast={null} />
+          <Scene progress={progress} profile={profile} cast={cast.value} />
           <Post profile={profile} state={state} />
           <PerfProbe onSample={onSample} />
         </Canvas>
@@ -68,6 +75,8 @@ function Experience() {
         ))}
       </div>
 
+      {cast.ui}
+
       {reduced && (
         <p className="reduced-note">Reduced motion is on — the experience is calmed.</p>
       )}
@@ -77,6 +86,8 @@ function Experience() {
         profile={profile}
         movementTitle={`${current.numeral} · ${current.title}`}
         globalProgress={progress.global}
+        castValue={cast.value}
+        castSource={cast.source}
       />
     </>
   )

@@ -110,11 +110,15 @@ export function PerfPanel({
   profile,
   movementTitle,
   globalProgress,
+  castValue,
+  castSource,
 }: {
   sample: PerfSample | null
   profile: QualityProfile
   movementTitle: string
   globalProgress: number
+  castValue: number | null
+  castSource: string
 }) {
   const [open, setOpen] = useState(import.meta.env.DEV)
 
@@ -185,6 +189,7 @@ export function PerfPanel({
       />
       {row('movement', movementTitle)}
       {row('progress', `${(globalProgress * 100).toFixed(1)}%`)}
+      {row('cast', castValue === null ? `— (${castSource})` : `${castValue.toFixed(2)} (${castSource})`)}
       <div style={{ marginTop: '0.45rem', opacity: 0.35, fontSize: '10px' }}>
         ` to toggle
       </div>
