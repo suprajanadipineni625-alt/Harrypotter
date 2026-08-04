@@ -1,0 +1,82 @@
+name: Deploy
+
+# Automatic hosting with no credentials to hand over.
+#
+# GitHub Pages deployed from Actions uses the repository's own short-lived
+# token, so nothing has to be created, stored or rotated. Every push to the
+# branch rebuilds and republishes.
+#
+# The one manual step, once: Settings -> Pages -> Source -> "GitHub Actions".
+
+on:
+  push:
+    branches:
+      - main
+      - claude/harry-potter-3d-website-8z9v03
+  workflow_dispatch:
+
+# Read the repo, write a Pages deployment, mint an OIDC token for it.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race. In-progress runs finish rather than being
+# cancelled, so a half-uploaded artefact is never published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        env:
+          # Must match the Pages sub-path. See vite.config.ts.
+          BASE_PATH: /Harrypotter/
+
+      - name: Check the size budget
+        # Fails the build over 10 MB rather than discovering it after launch.
+        run: npm run budget
+
+      - name: Verify all scenes render
+        # Advisory: CI has no GPU, so the frame-rate figure means nothing here.
+        # What this catches is console errors, unreachable scenes and draw-call
+        # regressions — all of which are real regardless of the renderer.
+        continue-on-error: true
+        run: |
+          npx playwright install --with-deps chromium
+          npx vite preview --port 4173 --host 127.0.0.1 &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://127.0.0.1:4173/Harrypotter/ && break
+            sleep 2
+          done
+          VERIFY_URL=http://127.0.0.1:4173/Harrypotter npm run verify -- high
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

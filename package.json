@@ -11,7 +11,6 @@
     "verify": "node scripts/verify.mjs",
     "budget": "node scripts/budget.mjs",
     "setup:gesture": "node scripts/setup-gesture.mjs",
-    "prebuild": "node scripts/setup-gesture.mjs",
     "reel:studio": "remotion studio remotion/index.ts",
     "reel:render": "node scripts/render-reel.mjs"
   },

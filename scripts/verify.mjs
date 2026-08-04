@@ -15,17 +15,31 @@
  * accurate regardless — those are the numbers to trust here.
  */
 import { chromium } from 'playwright'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, existsSync } from 'node:fs'
 
 const TIER = process.argv[2] ?? 'high'
 const URL = process.env.VERIFY_URL ?? 'http://127.0.0.1:5173'
 const OUT = process.env.VERIFY_OUT ?? '.verify-shots'
-const MOVEMENTS = 8
+/** Sample points across the whole story. Not one per scene — enough to catch
+ * a scene that fails to render, without a ten-minute run. */
+const SAMPLES = 16
+const PARTS = 8
 
 mkdirSync(OUT, { recursive: true })
 
+/**
+ * Find a Chromium.
+ *
+ * This container ships one at a fixed path; CI installs its own via
+ * `playwright install`. Passing a non-existent executablePath fails outright,
+ * and an empty string is NOT caught by `??` — so the path is checked for
+ * existence and otherwise omitted entirely, letting Playwright resolve its own.
+ */
+const candidates = [process.env.CHROMIUM_PATH, '/opt/pw-browsers/chromium']
+const executablePath = candidates.find((p) => p && existsSync(p))
+
 const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH ?? '/opt/pw-browsers/chromium',
+  ...(executablePath ? { executablePath } : {}),
   args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader'],
 })
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
@@ -40,10 +54,10 @@ await page.waitForTimeout(2500)
 const height = await page.evaluate(() => document.body.scrollHeight)
 const rows = []
 
-for (let i = 0; i < MOVEMENTS; i++) {
+for (let i = 0; i < SAMPLES; i++) {
   await page.evaluate(
     (y) => window.scrollTo(0, y),
-    Math.round((height - 900) * (i / (MOVEMENTS - 1))),
+    Math.round((height - 900) * (i / (SAMPLES - 1))),
   )
   await page.waitForTimeout(1400)
 
@@ -55,8 +69,8 @@ for (let i = 0; i < MOVEMENTS; i++) {
       return el ? Number(el.children[1].textContent.replace(/[^0-9.]/g, '')) : null
     }
     return {
-      numeral: document.querySelector('.hud__numeral')?.textContent ?? '',
-      title: document.querySelector('.hud__title')?.textContent ?? '',
+      numeral: document.querySelector('.progress-note')?.textContent ?? '',
+      title: document.querySelector('.prose__title')?.textContent ?? '',
       fps: num('fps'),
       calls: num('draw calls'),
       triangles: num('triangles'),
@@ -66,7 +80,7 @@ for (let i = 0; i < MOVEMENTS; i++) {
   })
 
   rows.push(row)
-  await page.screenshot({ path: `${OUT}/${TIER}-${i}-${row.numeral}.png` })
+  await page.screenshot({ path: `${OUT}/${TIER}-${String(i).padStart(2, '0')}.png` })
 }
 
 // Is this real hardware or a software rasteriser? On SwiftShader an FPS figure
@@ -94,7 +108,7 @@ if (software) {
 
 for (const r of rows) {
   console.log(
-    `${r.numeral.padStart(4)}  ${r.title.padEnd(20)} ` +
+    `${r.numeral.padEnd(13)} ${r.title.padEnd(26)} ` +
       `fps ${String(r.fps).padStart(3)}  calls ${String(r.calls).padStart(4)}  ` +
       `tris ${String(r.triangles).padStart(6)}  points ${String(r.points).padStart(7)}`,
   )
@@ -102,11 +116,16 @@ for (const r of rows) {
 
 const overCalls = rows.filter((r) => r.calls > 100)
 const slow = rows.filter((r) => r.fps !== null && r.fps < 55)
-const reachedAll = new Set(rows.map((r) => r.numeral)).size === MOVEMENTS
+// Every part should be seen, and scenes should actually change as we scroll.
+const partsSeen = new Set(rows.map((r) => r.numeral.trim())).size
+const scenesSeen = new Set(rows.map((r) => r.title.trim()).filter(Boolean)).size
+const blank = rows.filter((r) => !r.title.trim()).length
 
 console.log('')
 if (errors.length) console.log(`FAIL  ${errors.length} console error(s):`, errors)
-if (!reachedAll) console.log('FAIL  did not reach all eight movements')
+if (partsSeen < PARTS) console.log(`FAIL  saw only ${partsSeen} of ${PARTS} parts`)
+if (blank) console.log(`FAIL  ${blank} sample(s) rendered no scene text`)
+console.log(`      ${scenesSeen} distinct scenes across ${SAMPLES} samples`)
 if (overCalls.length)
   console.log(`FAIL  draw calls over 100 in: ${overCalls.map((r) => r.numeral).join(', ')}`)
 if (slow.length) {
@@ -116,7 +135,8 @@ if (slow.length) {
 
 const failed =
   errors.length > 0 ||
-  !reachedAll ||
+  partsSeen < PARTS ||
+  blank > 0 ||
   overCalls.length > 0 ||
   (slow.length > 0 && !software)
 
