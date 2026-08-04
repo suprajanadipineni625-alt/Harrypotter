@@ -1,83 +1,89 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Color, FogExp2, type Mesh, type PointLight } from 'three'
+import { Color, FogExp2, type PointLight } from 'three'
 import { resolveState } from '../movements/interpolate'
+import { MOVEMENTS } from '../movements/movements'
 import type { Progress } from '../core/progress'
 import type { QualityProfile } from '../core/tier'
+import { Cold, scrollCast } from '../movements/Cold'
+import { movementWeight } from '../movements/weight'
 
 /**
  * THE persistent scene. One scene, eight parameter states.
  *
- * Phase 1 deliberately renders almost nothing — a light, fog, a background and
- * one placeholder form. The point of this phase is to prove the machine holds
- * 60fps while transitioning through all eight states. Content arrives in
- * Phase 2 onward, into this same scene.
- *
- * Note the discipline: `useFrame` is used only to APPLY already-resolved state
- * to three.js objects. It never computes state from `state.clock`. All state
- * derives from the `progress` prop.
+ * `useFrame` here only APPLIES already-resolved state to three.js objects. It
+ * never computes state from `state.clock` — everything derives from `progress`.
+ * See core/progress.ts.
  */
+
+/**
+ * Which movements have their geometry allocated right now.
+ *
+ * Not just the current one: building a 20k-point buffer takes a few
+ * milliseconds, and doing that at the moment of a transition is a visible
+ * hitch. Keeping a one-movement lookahead means the build happens while the
+ * PREVIOUS movement is still on screen, where nobody sees it. Keeping the
+ * previous one alive briefly means scrolling back up is equally smooth.
+ */
+function mountWindow(index: number): number[] {
+  return [index - 1, index, index + 1].filter(
+    (i) => i >= 0 && i < MOVEMENTS.length,
+  )
+}
 
 export function Scene({
   progress,
   profile,
+  cast,
 }: {
   progress: Progress
   profile: QualityProfile
+  /** 0..1 Patronus cast. Null means "use the scroll-driven default". */
+  cast: number | null
 }) {
   const scene = useThree((s) => s.scene)
   const camera = useThree((s) => s.camera)
   const lightRef = useRef<PointLight>(null)
-  const markerRef = useRef<Mesh>(null)
 
-  const fog = useMemo(() => new FogExp2(new Color('#000').getHex(), 0.03), [])
+  const fog = useMemo(() => new FogExp2(0x000000, 0.03), [])
   const bgColor = useMemo(() => new Color(), [])
 
   useFrame(() => {
     const s = resolveState(progress)
 
-    // Background + fog
     bgColor.copy(s.background)
     scene.background = bgColor
     fog.color.copy(s.fog)
     fog.density = s.fogDensity
     scene.fog = fog
 
-    // The light you carry
     if (lightRef.current) {
       lightRef.current.color.copy(s.light)
-      lightRef.current.intensity = 14 + s.bloom * 10
+      lightRef.current.intensity = 9 + s.bloom * 7
     }
 
-    // Camera — driven by progress, not by a clock
     camera.position.z = s.cameraZ
     camera.position.y = s.cameraY
     camera.lookAt(0, s.cameraY * 0.35, 0)
-
-    // Placeholder form so there is something to judge depth and colour against.
-    // Ambient rotation derives from progress.time, which the DRIVER supplies —
-    // scroll gives real seconds, Remotion gives frame/fps. Never a clock read.
-    if (markerRef.current) {
-      markerRef.current.rotation.y = progress.time * 0.25
-      markerRef.current.rotation.x = Math.sin(progress.time * 0.15) * 0.2
-      markerRef.current.position.y = s.cameraY * 0.35
-    }
   })
+
+  const mounted = mountWindow(progress.movement)
+  const resolvedCast = cast ?? scrollCast(progress.local)
 
   return (
     <>
-      <pointLight ref={lightRef} position={[0, 0.5, 3]} distance={40} decay={1.6} />
-      <ambientLight intensity={0.12} />
+      {/* The light you carry, present in every movement. */}
+      <pointLight ref={lightRef} position={[0, 0.5, 3]} distance={44} decay={1.6} />
+      <ambientLight intensity={0.1} />
 
-      <mesh ref={markerRef}>
-        <icosahedronGeometry args={[1.6, 1]} />
-        <meshStandardMaterial
-          flatShading
-          roughness={0.55}
-          metalness={0.1}
-          wireframe={profile.tier === 'low'}
+      {mounted.includes(4) && (
+        <Cold
+          progress={progress}
+          profile={profile}
+          cast={progress.movement === 4 ? resolvedCast : 0}
+          weight={movementWeight(progress, 4)}
         />
-      </mesh>
+      )}
     </>
   )
 }

@@ -20,6 +20,8 @@ export interface PerfSample {
   triangles: number
   /** Wireframe and line geometry count here, not under triangles. */
   lines: number
+  /** Point clouds count here. This site is mostly points, so this is the one. */
+  points: number
   textures: number
   geometries: number
   programs: number
@@ -44,24 +46,50 @@ export function PerfProbe({ onSample }: { onSample: (s: PerfSample) => void }) {
   const frames = useRef(0)
   const last = useRef(performance.now())
 
+  /**
+   * Take manual control of `info` accumulation.
+   *
+   * By default three.js resets the counters at the start of every `render()`.
+   * Once EffectComposer is in play there are SEVERAL render calls per frame —
+   * the scene pass plus one per effect — so the default behaviour means we only
+   * ever read the last one, which is a single fullscreen triangle. That reports
+   * "1 draw call, 1 triangle" no matter how heavy the scene is: worse than no
+   * instrumentation, because it looks like good news.
+   *
+   * With autoReset off we accumulate across every pass and reset once per frame
+   * ourselves, so the numbers are whole-frame totals.
+   */
+  useEffect(() => {
+    gl.info.autoReset = false
+    return () => {
+      gl.info.autoReset = true
+    }
+  }, [gl])
+
   useFrame(() => {
     frames.current += 1
     const now = performance.now()
     const elapsed = now - last.current
-    if (elapsed < 500) return
-
     const info = gl.info
-    onSample({
-      fps: Math.round((frames.current * 1000) / elapsed),
-      calls: info.render.calls,
-      triangles: info.render.triangles,
-      lines: info.render.lines,
-      textures: info.memory.textures,
-      geometries: info.memory.geometries,
-      programs: info.programs?.length ?? 0,
-    })
-    frames.current = 0
-    last.current = now
+
+    if (elapsed >= 500) {
+      onSample({
+        fps: Math.round((frames.current * 1000) / elapsed),
+        calls: info.render.calls,
+        triangles: info.render.triangles,
+        lines: info.render.lines,
+        points: info.render.points,
+        textures: info.memory.textures,
+        geometries: info.memory.geometries,
+        programs: info.programs?.length ?? 0,
+      })
+      frames.current = 0
+      last.current = now
+    }
+
+    // Priority -1 runs before the scene renders, so this clears the previous
+    // frame's totals after we have read them.
+    info.reset()
   }, -1)
 
   return null
@@ -135,6 +163,7 @@ export function PerfPanel({
       )}
       {row('triangles', sample.triangles.toLocaleString())}
       {row('lines', sample.lines.toLocaleString())}
+      {row('points', sample.points.toLocaleString())}
       {row('textures', String(sample.textures))}
       {row('geometries', String(sample.geometries))}
       {row('programs', String(sample.programs))}

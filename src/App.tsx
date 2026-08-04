@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { ScrollDriver, useProgress } from './scroll/ScrollDriver'
 import { Scene } from './scene/Scene'
+import { Post } from './scene/Post'
 import { PerfPanel, PerfProbe, type PerfSample } from './core/PerfOverlay'
 import { detectTier, prefersReducedMotion, profileFor } from './core/tier'
 import { MOVEMENTS, MOVEMENT_COUNT } from './movements/movements'
@@ -36,7 +37,8 @@ function Experience() {
           camera={{ fov: 42, position: [0, 0, 9] }}
           gl={{ antialias: profile.tier !== 'low', powerPreference: 'high-performance' }}
         >
-          <Scene progress={progress} profile={profile} />
+          <Scene progress={progress} profile={profile} cast={null} />
+          <Post profile={profile} state={state} />
           <PerfProbe onSample={onSample} />
         </Canvas>
       </div>

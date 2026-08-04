@@ -231,3 +231,84 @@ start immediately.
 Direction is needed **before Phase 2**, and that is where `/impeccable init`
 earns its place: what the eight acts *are*, what unifies them, and what the
 site feels like.
+
+---
+
+# Build log
+
+Recorded as phases complete. Findings that changed the plan are kept here
+rather than smoothed away.
+
+## Phase 2 gate — Movement V (Cold), measured
+
+**Result: passed, and the scope question changed shape.**
+
+| | Measured |
+|---|---|
+| Asset cost of one movement | **0 bytes** |
+| Draw calls (movement) | 3 |
+| Draw calls (whole frame, incl. post) | ~20 |
+| Points on screen, high tier | 36 000 |
+| Build after Phase 2 | 366 kB of 10 MB (3.7%) |
+
+**The finding: a movement built from shaders and points costs nothing to
+download.** Cold is three `ParticleField` instances and a post-processing grade
+— no models, no textures, no geometry files. Multiplying by eight still gives
+zero asset bytes. The 10 MB budget is essentially untouched by this approach.
+
+So the Phase 3 scope lever is not needed for *budget* reasons. The real limits
+are draw calls and fill rate, and at 3 calls per movement with only one movement
+weighted above zero at a time, there is comfortable headroom. **All eight
+movements stay in scope.** Architecture (Movements II and III) will spend real
+bytes; that is where the ledger starts mattering.
+
+### Three bugs this phase caught, all of which would have shipped
+
+1. **The perf probe reported "1 draw call, 1 triangle" once post-processing was
+   added** — three.js resets `info` per `render()`, and EffectComposer renders
+   many times per frame, so we were reading only the last fullscreen pass.
+   Instrumentation that silently reports good news is worse than none. Fixed
+   with `info.autoReset = false` and a manual per-frame reset.
+2. **The verify gate passed at 3fps** because it never checked frame rate.
+   Now fails under 55fps — downgraded to a warning only when the renderer is a
+   software rasteriser, where the figure is meaningless.
+3. **The mount window drew neighbouring movements' content.** Keeping buffers
+   warm one movement ahead is right; letting them render using the *current*
+   movement's local progress is not. Cold's dementors were appearing during
+   Descent. Fixed with `movements/weight.ts`.
+
+### Performance findings
+
+- **Point size is the dominant cost, not point count.** Dropping the
+  `gl_PointSize` clamp from 64px to 22px took the scene from ~3fps to ~15fps on
+  the software rasteriser — a 4× win from one line, because additive points are
+  fill-rate bound and overlap heavily.
+- **After that fix the remaining cost is vertex processing, not fill.** Verified
+  by measuring at 1440×900, 720×450 and 360×225: frame rate stayed flat at
+  16/17/18fps across a 16× reduction in pixels. That is SwiftShader running 30k
+  vertex shaders on CPU — a cost that does not exist on a real GPU.
+- **Consequence: frame rate on this container is not evidence.** Draw calls,
+  point counts, byte sizes and error-freedom are. Real-hardware verification on
+  a desktop GPU and a mid-range phone is still outstanding and is a Phase 7 gate.
+
+### Art direction notes
+
+Three passes were needed before Cold read as anything:
+
+1. **Blown out to pure white.** Bloom `luminanceThreshold` at 0.12 blooms
+   mid-tones, and a scene made of additive points then becomes a white
+   rectangle. Raised to 0.55: only genuinely bright cores glow, darkness stays
+   dark. Contrast is the subject.
+2. **Bokeh, not light.** A linearly soft point edge reads as defocused
+   photography. Squaring the falloff concentrates energy into a few pixels so it
+   reads as a spark, and lets bloom supply the halo — cheaper and more
+   convincing than a large translucent quad.
+3. **A ball of dots, not a cast.** Purely radial motion reads as scatter. Adding
+   tangential swirl that decays with radius reads as force. Perfect spherical
+   symmetry is also what makes procedural effects look procedural, so the burst
+   lifts slightly as it expands.
+
+**Still honest about this:** Cold now has real form and contrast, but it is not
+yet the best version of itself. A Patronus that genuinely stops a thumb wants
+directional streaking and a suggestion of shape. That is art-direction
+iteration with a human eye on a real GPU, not more parameter guessing here.
