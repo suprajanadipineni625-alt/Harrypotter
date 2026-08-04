@@ -312,3 +312,88 @@ Three passes were needed before Cold read as anything:
 yet the best version of itself. A Patronus that genuinely stops a thumb wants
 directional streaking and a suggestion of shape. That is art-direction
 iteration with a human eye on a real GPU, not more parameter guessing here.
+
+## Phases 3–7 — build log
+
+### Phase 3/4 — all movements, and the web
+
+Every movement is the same `ParticleField` primitive under different parameters,
+which is why the whole experience costs zero asset bytes. The web is two draw
+calls — one buffer of nodes, one of edges — and persists behind every movement
+after III rather than appearing once.
+
+**Bug found: the final movement faded to an empty frame.** `movementWeight`
+assumed there was always a next movement to cross-fade into, so Dawn went to
+zero exactly where it is supposed to land on Movement I's gold — the single
+moment the whole arc is built around.
+
+Web clusters were pulled inward from ±7 to ±4.2 so nothing important sits near
+the frame edge. That is BUILD-CONSTRAINTS §3 applied to composition rather than
+to editing: an effect that only reads across a wide frame gets cut in half in a
+9:16 post.
+
+### Phase 5 — gesture
+
+The cast is one 0..1 number with three sources and no downstream knowledge of
+which is driving it. Pointer was built first so the camera could never become
+load-bearing.
+
+**The cost is the story here.** The on-device runtime is 23 MB of wasm plus a
+7.8 MB model — over three times the entire site budget, for a feature most
+visitors never trigger. Resolved by accounting honestly rather than by cutting:
+`scripts/budget.mjs` reports opt-in payload separately, and the staging script
+drops the unused `vision_wasm_module_internal` build, halving the wasm.
+
+**Bug the pointer path exposed:** the burst faded out as `uBurst` approached 1,
+which is fine for a value sweeping past but wrong for a HELD interaction — a
+visitor pressing and holding was rewarded with an empty screen. Found only after
+adding the cast value to the perf overlay; it was invisible before that.
+
+### Phase 6 — the reel
+
+`@remotion/three` mounts the site's own `Scene` and `Post` and drives them from
+`useCurrentFrame()`. Verified: **1080×1920, 60fps, h264 + AAC, 9:16**, with bloom
+and grade intact. The Phase 1 rule paid for itself exactly as intended — one
+substitution, zero duplicated scene work.
+
+Remotion downloads its own headless Chromium, which 403s under a restricted
+egress policy; `scripts/render-reel.mjs` falls back to a local **headless shell**
+(not full Chrome, which removed old headless mode).
+
+### Phase 7 — ship
+
+- Low-tier particle cap cut from 12k to 8k per field. The cap is per-field and
+  movements run up to three at once, so the worst case is 3×, which the original
+  figure did not account for.
+- Reduced motion now does something: ambient drift at quarter speed, shorter
+  scroll easing. Scroll-driven progression is untouched, because that IS the
+  content — freezing it would give a blank page, not an accessible one.
+- **Budget script was over-reporting.** It counted every `.js` in `dist/` as
+  initial download, including MediaPipe's lazily-imported 153 kB chunk. It now
+  reads `index.html` to determine what actually loads on arrival.
+
+**Final: 370 kB shipped of 10 MB (3.7%). 1–23 draw calls. Both tiers pass.**
+
+---
+
+## Outstanding
+
+Stated plainly rather than buried:
+
+1. **No real-GPU verification.** This container has no GPU, so every frame-rate
+   figure here comes from a software rasteriser and is not evidence. Draw calls,
+   point counts, byte sizes and error-freedom are accurate. Testing on a desktop
+   GPU and a mid-range phone is the one gate that could not be closed here.
+2. **Art direction needs a human eye.** The movements have real structure and
+   contrast, but "working" is not "breathtaking". The Patronus in particular
+   wants directional streaking and a suggestion of shape — that is iteration
+   against a real display, not more parameter guessing in a headless browser.
+3. **No architecture yet.** Movements II and III describe King's Cross and the
+   cloisters; both currently render as light and dust. The reference pipeline in
+   docs/REFERENCES.md is specified but has not been exercised, and it is where
+   the remaining 9.6 MB of budget goes.
+4. **Fiendfyre is not attempted.** Flagged at the Phase 2 gate as the one effect
+   needing its own vertical slice. Fire ships as heat, embers and ash.
+5. **`/impeccable init` has not been run.** PRODUCT.md and DESIGN.md are still
+   unwritten, so the type and colour system in the HUD is a placeholder rather
+   than a designed system.

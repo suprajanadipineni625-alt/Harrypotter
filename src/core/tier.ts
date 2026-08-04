@@ -22,7 +22,11 @@ export interface QualityProfile {
   bloom: boolean
   /** Depth of field, grain, chromatic aberration — the expensive tail. */
   richPost: boolean
-  /** Upper bound on instanced particles in any one system. */
+  /**
+   * Upper bound on particles in any ONE field. Movements run two or three
+   * fields at once, so the worst case is roughly three times this — which is
+   * why the low figure is well under what a single field could afford.
+   */
   maxParticles: number
   /** Real-time shadows, or baked/faked. */
   shadows: boolean
@@ -47,7 +51,7 @@ const PROFILES: Record<Tier, QualityProfile> = {
     postProcessing: true,
     bloom: true,
     richPost: false,
-    maxParticles: 40_000,
+    maxParticles: 30_000,
     shadows: false,
     textureScale: 0.5,
   },
@@ -57,7 +61,7 @@ const PROFILES: Record<Tier, QualityProfile> = {
     postProcessing: false,
     bloom: false,
     richPost: false,
-    maxParticles: 12_000,
+    maxParticles: 8_000,
     shadows: false,
     textureScale: 0.25,
   },

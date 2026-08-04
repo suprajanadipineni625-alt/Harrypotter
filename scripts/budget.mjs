@@ -39,15 +39,38 @@ let optInBytes = 0
 const assets = []
 
 /**
- * Opt-in assets are excluded from the initial budget.
+ * What does a visitor ACTUALLY download on arrival?
  *
- * Nothing under vendor/ is fetched unless a visitor explicitly enables the
- * camera. Counting a 31 MB hand-tracking runtime against a 10 MB budget for
- * the experience everyone sees would be false accounting in the strict
- * direction — it would force cuts to the site to pay for a feature most people
- * never trigger. It is reported separately instead, because it is still real.
+ * Not every file in dist/. Two categories are deferred:
+ *
+ *   - anything under vendor/, fetched only on camera consent
+ *   - lazily imported chunks, which the browser fetches only when the dynamic
+ *     import runs — the hand-tracking bundle is 150 kB of that
+ *
+ * Counting either against the 10 MB budget is false accounting in the strict
+ * direction: it would force real cuts to the experience everyone sees in order
+ * to pay for a feature most visitors never trigger. Both are reported
+ * separately instead, because they are still real bytes on someone's connection.
+ *
+ * The entry set is read from index.html rather than guessed at — whatever the
+ * HTML references with <script> or modulepreload is what loads on arrival.
  */
-const isOptIn = (p) => p.includes('vendor/')
+const entryRefs = (() => {
+  try {
+    const html = readFileSync(join(DIST, 'index.html'), 'utf8')
+    return new Set([...html.matchAll(/(?:src|href)="\/?([^"]+\.(?:js|css))"/g)].map((m) => m[1]))
+  } catch {
+    return null
+  }
+})()
+
+const isOptIn = (p) => {
+  if (p.includes('vendor/')) return true
+  if (!entryRefs) return false
+  const rel = p.replace(/^.*?dist\//, '')
+  // A JS chunk the entry HTML never references is loaded on demand, if at all.
+  return extname(p) === '.js' && !entryRefs.has(rel)
+}
 
 for (const f of files) {
   if (isOptIn(f.path)) {

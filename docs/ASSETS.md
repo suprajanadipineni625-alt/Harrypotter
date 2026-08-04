@@ -27,14 +27,39 @@ small decisions. Run `npm run budget` after any build to reconcile it.
 5. **Prefer maths over files.** A gradient should almost never be an image. The
    cheapest asset is the one replaced by a few lines of GLSL.
 
-## Budget
+## Budget — measured after Phase 7
 
 | | Bytes | Notes |
 |---|---|---|
 | Budget | 10 000 000 | hard ceiling |
-| JS (gzip) | ~347 000 | three.js + R3F + GSAP + Lenis, measured at Phase 0 |
-| Assets | 0 | nothing yet |
-| **Remaining** | **~9 650 000** | |
+| JS + CSS (gzip) | ~368 000 | three.js, R3F, GSAP, Lenis, postprocessing |
+| Assets | 233 | the favicon |
+| **Shipped** | **~368 000** | **3.7% of budget** |
+| **Remaining** | **~9 630 000** | |
+
+**All eight movements are made of shaders and points, so they cost zero asset
+bytes.** That was the Phase 2 finding and it is why the whole experience fits in
+under 4% of its own budget. Architecture — the cloisters and King's Cross in
+Movements II and III — is where bytes will finally be spent.
+
+## Opt-in payload — NOT counted above
+
+| Asset | Bytes | Notes |
+|---|---|---|
+| MediaPipe vision wasm | ~23 400 000 | SIMD + nosimd fallback |
+| `hand_landmarker.task` | ~7 800 000 | float16 model |
+| **Total** | **~31 200 000** | fetched ONLY on camera consent |
+
+Deliberately excluded from the 10 MB budget. Nothing here is downloaded unless a
+visitor explicitly enables the camera in Movement V; counting it against the
+initial budget would force real cuts to the experience everyone sees in order to
+pay for a feature most never trigger. It is over three times the entire site
+budget, which is worth knowing.
+
+Staged at build time by `scripts/setup-gesture.mjs` and gitignored — a 31 MB
+binary blob in git history is permanent, and neither file is ours. Self-hosted
+rather than CDN-loaded: a third-party script host on a page requesting camera
+permission is both a privacy leak and a single point of failure.
 
 ## Ledger
 
@@ -42,4 +67,4 @@ small decisions. Run `npm run budget` after any build to reconcile it.
 |---|---|---|---|---|---|
 | `public/favicon.svg` | — | original | — | 233 | hand-written |
 
-*(No third-party assets yet. Phase 1 is deliberately geometry-free.)*
+*No third-party visual assets. Every movement is procedural.*

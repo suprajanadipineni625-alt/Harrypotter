@@ -4,6 +4,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { splitProgress, ZERO_PROGRESS, type Progress } from '../core/progress'
 import { MOVEMENT_COUNT } from '../movements/movements'
+import { prefersReducedMotion } from '../core/tier'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -23,9 +24,16 @@ export function ScrollDriver({ children }: { children: React.ReactNode }) {
   const timeRef = useRef(0)
 
   useEffect(() => {
+    // Reduced motion calms the site rather than removing it. Ambient drift runs
+    // at a quarter speed and the scroll easing shortens; scroll-driven
+    // progression is untouched, because that IS the content — freezing it would
+    // leave a blank page rather than an accessible one.
+    const reduced = prefersReducedMotion()
+    const timeScale = reduced ? 0.25 : 1
+
     const lenis = new Lenis({
       // Slightly long, because this is a cinematic scroll rather than a document.
-      duration: 1.2,
+      duration: reduced ? 0.6 : 1.2,
       smoothWheel: true,
     })
 
@@ -38,7 +46,7 @@ export function ScrollDriver({ children }: { children: React.ReactNode }) {
     const tick = (time: number) => {
       // GSAP's ticker gives seconds; Lenis wants milliseconds.
       lenis.raf(time * 1000)
-      timeRef.current = time
+      timeRef.current = time * timeScale
     }
     gsap.ticker.add(tick)
     gsap.ticker.lagSmoothing(0)
