@@ -135,9 +135,20 @@ export function Layer({
       ? /* glsl */ `
           uniform sampler2D uMap;
           uniform float uOpacity;
+          uniform vec2 uCover;
           varying vec2 vUv;
           void main() {
-            vec4 c = texture2D(uMap, vUv);
+            // COVER fit, not stretch.
+            //
+            // The plane is sized to the viewport, so mapping the texture 0..1
+            // across it distorts any image whose aspect differs — a portrait
+            // source on a landscape plane gets stretched horizontally, which
+            // reads as horizontal smearing across the whole scene rather than
+            // as an obviously wrong image. uCover rescales UVs about the
+            // centre so the image fills the frame at its true aspect and the
+            // overflow is cropped instead.
+            vec2 uv = (vUv - 0.5) / uCover + 0.5;
+            vec4 c = texture2D(uMap, uv);
             gl_FragColor = vec4(c.rgb, c.a * uOpacity);
           }
         `
@@ -156,7 +167,7 @@ export function Layer({
         uInk: { value: new Color(palette.ink) },
         uAccent: { value: new Color(palette.accent) },
         uPointer: { value: new Vector2() },
-        ...(texture ? { uMap: { value: texture } } : {}),
+        ...(texture ? { uMap: { value: texture }, uCover: { value: new Vector2(1, 1) } } : {}),
       },
     })
   }, [shader, image, texture, palette.background, palette.ink, palette.accent])
@@ -170,6 +181,29 @@ export function Layer({
     if (u.uInk) (u.uInk.value as Color).set(palette.ink)
     if (u.uAccent) (u.uAccent.value as Color).set(palette.accent)
     if (u.uPointer) (u.uPointer.value as Vector2).set(pointer[0], pointer[1])
+
+    // Recomputed per frame because both the image and the viewport can change.
+    if (u.uCover && texture?.image) {
+      const iw = (texture.image as { width?: number }).width ?? 1
+      const ih = (texture.image as { height?: number }).height ?? 1
+      const imageAspect = iw / ih
+      const planeAspect = viewport.width / viewport.height
+      const v = u.uCover.value as Vector2
+      //
+      // The shader divides by uCover, so a value ABOVE 1 narrows the sampled
+      // range — which is what cropping means. Getting this inverted pushes UVs
+      // outside 0..1, where the texture clamps and smears its edge pixels
+      // across the frame as horizontal or vertical streaks. That looks like a
+      // rendering glitch rather than a wrong image, which is what made it hard
+      // to place.
+      if (imageAspect > planeAspect) {
+        // Image is wider than the frame: fill height, crop the sides.
+        v.set(imageAspect / planeAspect, 1)
+      } else {
+        // Image is taller than the frame: fill width, crop top and bottom.
+        v.set(1, planeAspect / imageAspect)
+      }
+    }
 
     // Parallax. Nearer layers move further, which is the whole illusion.
     if (mesh.current) {

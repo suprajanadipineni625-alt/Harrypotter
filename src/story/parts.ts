@@ -149,6 +149,7 @@ export const PARTS: Part[] = [
         prose:
           'Torchlight, wet stone, and a sentence written high enough that somebody had to have been lifted to write it. The water on the floor had not been there that morning.',
         art: 'corridor',
+        image: { back: 'scenes/writing.webp', mid: '', fore: '' },
       },
       {
         id: 'diary',
@@ -156,6 +157,7 @@ export const PARTS: Part[] = [
         prose:
           'The page drank the ink and gave it back as an answer. It was polite. It was patient. It had been waiting fifty years for somebody to write in it.',
         art: 'corridor',
+        image: { back: 'scenes/diary.webp', mid: '', fore: '' },
       },
       {
         id: 'chamber',
@@ -163,6 +165,7 @@ export const PARTS: Part[] = [
         prose:
           'Stone serpents the height of houses, green water, and something enormous moving just outside the reach of the light.',
         art: 'chamber',
+        image: { back: 'scenes/chamber.webp', mid: '', fore: '' },
       },
       {
         id: 'fang',
@@ -292,6 +295,7 @@ export const PARTS: Part[] = [
         prose:
           'Shelves running away into the dark in every direction, each one holding a small glass sphere, each sphere holding somebody’s whole life said out loud once.',
         art: 'prophecy',
+        image: { back: 'scenes/prophecy.webp', mid: '', fore: '' },
       },
       {
         id: 'shatter',
@@ -337,6 +341,7 @@ export const PARTS: Part[] = [
         prose:
           'Black water, a ring of green fire, and a basin that had to be emptied by somebody willing to keep drinking. Hands came out of the lake when the light went down.',
         art: 'cave',
+        image: { back: 'scenes/cave.webp', mid: '', fore: '' },
       },
       {
         id: 'towerfall',

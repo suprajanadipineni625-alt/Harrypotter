@@ -29,6 +29,22 @@ const DIR = process.argv[2] ?? 'public/scenes'
 const MAX_WIDTH = 1600
 const QUALITY = 80
 
+/**
+ * Every backdrop is normalised to one landscape aspect.
+ *
+ * Generators return whatever shape they feel like — 4:3, 16:9, and portrait
+ * when asked for a tall subject. Feeding mixed aspects to a fixed landscape
+ * plane means correcting for it at render time, and any error there pushes UVs
+ * outside 0..1 where the texture clamps and smears its edge pixels into
+ * streaks across the whole frame.
+ *
+ * Cropping here instead removes the class of bug entirely: the shader can
+ * assume one shape, and the crop is decided by a tool that can see the whole
+ * image rather than by arithmetic at 60fps. Centre crop, because these
+ * compositions put their subject in the middle.
+ */
+const TARGET = { width: 1600, height: 1000 }
+
 const sources = readdirSync(DIR).filter((f) =>
   ['.png', '.jpg', '.jpeg'].includes(extname(f).toLowerCase()),
 )
@@ -50,8 +66,17 @@ for (const file of sources) {
   before += inBytes
 
   const meta = await sharp(src).metadata()
+  const ratio = (meta.width ?? 1) / (meta.height ?? 1)
+  const target = ratio.toFixed(2)
+
   await sharp(src)
-    .resize({ width: Math.min(meta.width ?? MAX_WIDTH, MAX_WIDTH), withoutEnlargement: true })
+    .resize({
+      width: TARGET.width,
+      height: TARGET.height,
+      fit: 'cover',
+      position: 'centre',
+      withoutEnlargement: false,
+    })
     .webp({ quality: QUALITY, effort: 6 })
     .toFile(out)
 
@@ -63,8 +88,10 @@ for (const file of sources) {
   unlinkSync(src)
 
   const saved = (100 * (1 - outBytes / inBytes)).toFixed(0)
+  const cropped = Math.abs(ratio - TARGET.width / TARGET.height) > 0.05
   console.log(
-    `  ${id.padEnd(14)} ${(inBytes / 1e6).toFixed(2)} MB -> ${(outBytes / 1e3).toFixed(0)} kB  (-${saved}%)`,
+    `  ${id.padEnd(14)} ${(inBytes / 1e6).toFixed(2)} MB -> ${(outBytes / 1e3).toFixed(0)} kB  (-${saved}%)` +
+      (cropped ? `  [cropped from ${target}:1]` : ''),
   )
 }
 
