@@ -28,3 +28,6 @@ dist-ssr
 
 # staged at build time, never committed (20MB of runtime + model)
 public/vendor/
+
+# rendered video output
+out/
