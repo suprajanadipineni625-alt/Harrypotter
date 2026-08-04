@@ -42,6 +42,36 @@ npm run reel:render    # out/reel-9x16.mp4 — 1080x1920, 60fps, h264 + AAC
 The video mounts the site's own scene components and drives them from a frame
 counter instead of scroll. Nothing is duplicated and nothing is screen-recorded.
 
+## Hosting
+
+Deployed automatically to GitHub Pages on every push. No tokens, no CLI, no
+account linking — Pages deployed from Actions uses the repository's own
+short-lived credential, so there is nothing to create, store or rotate.
+
+**One manual step, once:**
+
+> Settings → Pages → Build and deployment → Source → **GitHub Actions**
+>
+> https://github.com/suprajanadipineni625-alt/Harrypotter/settings/pages
+
+Until that is set, the build succeeds and the deploy step fails with
+`404 Not Found` — the workflow cannot enable Pages on its own.
+
+Live at **https://suprajanadipineni625-alt.github.io/Harrypotter/** once enabled.
+
+The workflow type-checks, builds, enforces the 10 MB budget as a hard gate, and
+walks the whole story in a real browser before it publishes anything.
+
+### Other hosts
+
+`base` is overridable, so a root-path deploy works anywhere:
+
+```bash
+BASE_PATH=/ npm run build     # then upload dist/ to Netlify, Firebase, anywhere
+```
+
+Both of those need an auth token; Pages does not, which is why it is the default.
+
 ## Architecture
 
 **Every visual is a pure function of `Progress`. Nothing reads the wall clock.**
