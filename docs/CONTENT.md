@@ -1,166 +1,195 @@
-# Content: the eight acts
+# Content: eight movements
 
-Selected content, with the reasoning. Chosen against three filters:
+**This replaces an earlier film-by-film selection.** That version took the most
+iconic image from each of the eight films in order. It was the safe choice, and
+safe is the failure mode we are trying to avoid — chronological order is not a
+*connection* between the parts, it is just sequence.
 
-1. **Is it iconic as an *image*?** Dialogue-driven moments, however beloved, are
-   useless here. We need moments that survive being reduced to light, colour,
-   silhouette and motion.
-2. **Can it be evoked rather than reproduced?** We use no film assets, no film
-   stills, no book text, no logos or crests (BUILD-CONSTRAINTS §5). Every act
-   must work as an *abstraction* of a moment. This is a creative advantage, not
-   a limitation — abstraction is what separates an art piece from a fan wiki.
-3. **Does it fit the frame budget?** Anything that needs a detailed character
-   model is out. Light, particles, fog, silhouette and shader work are in.
+---
+
+## The structural idea
+
+**Movements, not films.** Each movement braids three or four moments from
+*different* films that rhyme visually and emotionally. A movement is anchored by
+one famous image and filled out with underrated ones.
+
+Why this is the right structure rather than a clever one:
+
+- **It is the answer to the original brief.** You asked for the connection
+  between the parts. Playing the films in order does not connect them; it lists
+  them. Putting the floating candles next to the Deluminator next to wands raised
+  at the tower *is* a connection — an argument that these are the same image
+  three times, twelve years apart.
+- **It forces the underrated content in structurally.** A movement needs three or
+  four examples, and the famous one is only ever one of them. Under a
+  one-scene-per-film scheme the obvious pick wins every time.
+- **Nobody tells it this way.** Every Harry Potter tribute is chronological. This
+  is the difference between "nice Patronus" and "I have never seen anyone connect
+  these four things."
+
+### One honest tension
+
+Most published "underrated Harry Potter moments" lists are about *performance* —
+Slughorn's memory of Lily, Narcissa's whispered "is he alive?", Harry arguing
+for Pettigrew's life. These are genuinely the overlooked greats, and almost all
+of them are useless to us: they are underrated *because* they are subtle, and
+subtlety lives in faces we cannot render.
+
+So the filter is narrower than "underrated". It is **underrated as an image** —
+moments with real visual force that got overshadowed. Different list, and a
+shorter one.
 
 ---
 
 ## The through-line
 
-**You carry a light, and the light is the story.**
+**You carry a light.** Its colour and behaviour are the narrative. This is what
+the films already do — Columbus's bright childlike world, Cuarón's naturalism,
+Half-Blood Prince's cold teal grade. We amplify an arc that exists.
 
-One light source travels the entire experience and never cuts. Its colour,
-temperature and behaviour *are* the narrative — because that is genuinely how
-these films were shot. The cinematography went from Columbus's bright,
-wonder-filled world seen through a child's eyes, to Cuarón's naturalism, to
-Half-Blood Prince's cold teal-green grade. The arc already exists in the source
-material; we are amplifying it, not inventing it.
-
-This solves three problems at once:
-
-- **Performance** — light and colour are shader and post-processing work, not
-  geometry. One persistent scene, eight parameter states.
-- **Connection** — the thing you asked for. The light never cuts, so the
-  connection is structural rather than decorative.
-- **Arc** — gold → descent → dark → breath → gold returning. That shape is what
-  stops eight acts being a list.
+The Deluminator earns promotion from prop to *device*: it is canonically the
+object that takes light and gives it back, which is exactly what the site does
+across eight movements.
 
 ---
 
-## The acts
+## The movements
 
-### Act 1 — Philosopher's Stone · the floating candles
+### I — Lights in the dark
+*The thesis. Everything after this is a variation.*
 
-**Image:** thousands of points of warm light suspended in a vast dark, drifting.
-The camera rises through them.
+| Moment | Film | Standing |
+|---|---|---|
+| Floating candles, Great Hall | Philosopher's Stone | iconic anchor |
+| Fred and George's fireworks | Order of the Phoenix | **underrated** — described as a visual metaphor for the twins; pure light and colour |
+| The Deluminator | Deathly Hallows 1 | **underrated** — a light taken and returned |
+| Wands raised at the tower | Half-Blood Prince | **underrated as an image** — hundreds of points of light erasing a dark mark |
 
-- **Palette:** candle amber, warm gold, deep warm black
-- **Build:** instanced points, bloom, gentle noise drift
-- **Why it opens:** motion on the very first frame, no loading state — the
-  3-second rule from BUILD-CONSTRAINTS §3. And it is the purest image of wonder
-  in the series.
-- **Interaction:** the pointer disturbs the candles; they drift back.
+- **Palette:** candle amber → silver-white
+- **Build:** instanced points, bloom, drift. One system, four behaviours.
+- **Opens on motion** — the 3-second rule, no loading state.
 
-### Act 2 — Chamber of Secrets · the chamber
+### II — Doors
+*Thresholds. Each one costs more to walk through than the last.*
 
-**Image:** submerged green dark. Vast stone. Something enormous moving just
-outside where the light reaches.
+| Moment | Film | Standing |
+|---|---|---|
+| Platform 9¾ | Philosopher's Stone | iconic anchor |
+| The Vanishing Cabinet | Half-Blood Prince | **underrated** — a bird sent through, returned dead, then returned alive |
+| The Room of Hidden Things | Deathly Hallows 2 | **underrated** — an infinite room of stacked objects |
+| King's Cross, white | Deathly Hallows 2 | **underrated as an image** — the last door, and a pure white void |
 
-- **Palette:** sickly green, wet stone, black water
-- **Build:** volumetric fog, caustic shader, one large silhouette that is never
-  fully revealed
-- **Note:** restraint is the whole effect. What you do not show is the horror.
+- **Palette:** warm brick → dust → **absolute white**
+- **Build:** portal shader; instanced stacks with heavy repetition. King's Cross
+  is the cheapest render in the entire site and one of the most striking.
 
-### Act 3 — Prisoner of Azkaban · the Patronus
+### III — The web
+*Houses, families, allegiances — promoted from interstitial to a movement of its own.*
 
-**Image:** cold advances from the edges of the frame — frost, darkness closing
-in. Then silver-white light bursts outward and drives it back.
+| Moment | Film | Standing |
+|---|---|---|
+| The Marauder's Map | Prisoner of Azkaban | **underrated as an interface** — names moving, people as points |
+| The Black family tapestry | Order of the Phoenix | **underrated** — connection and its violent severance, faces burnt out |
+| The constellation | — | original |
 
-- **Palette:** blue-silver moonlight against black
-- **Build:** post-processing (vignette, frost, desaturation) fighting a particle
-  burst
-- **This is the gesture beat.** Of every moment in the series this is the one
-  built for a hand raised at a camera. It is also the arc's first turn: the
-  first time light is something you *do*, not something you watch.
+- **Palette:** parchment, ink, gold thread, four house colours
+- **Build:** GPU-instanced points and lines. Characters as points, house as
+  colour, relationships as threads.
+- **The map and the tapestry are the same object with opposite intent** — one
+  shows you where everyone is, the other erases whoever disappointed the family.
+  That contrast carries the whole movement.
+- The web **persists and grows** for the rest of the site, thickening under
+  later movements.
 
-### Act 4 — Goblet of Fire · the second task
+### IV — Descent
+*Down, into water, into dark.*
 
-**Image:** descending into cold black water. The surface light failing above.
-Shapes below.
+| Moment | Film | Standing |
+|---|---|---|
+| The Chamber | Chamber of Secrets | iconic anchor |
+| The second task | Goblet of Fire | **underrated** — the lake's cold look is specifically praised in the cinematography writing |
+| The cave | Half-Blood Prince | anchor — the film's signature teal grade |
 
-- **Palette:** cold teal-black
-- **Build:** depth fog, god-rays from above, drifting particulate
-- **Why this over the graveyard:** the underwater task is the better *image* —
-  the graveyard is a performance and a story beat, and abstracted it becomes
-  a generic dark field. The lake's cold look is specifically praised in the
-  cinematography writing, and depth is something WebGL renders beautifully.
+- **Palette:** sickly green → cold teal → black
+- **Build:** volumetric fog, caustics, god-rays from a failing surface above.
+  One depth system, three depths.
 
-### Act 5 — Order of the Phoenix · the Hall of Prophecy
+### V — Cold
+*The turn. The first time light is something you do rather than watch.*
 
-**Image:** infinite shelves of glowing orbs receding into dark — then the
-shatter, and thousands of points of light falling.
+| Moment | Film | Standing |
+|---|---|---|
+| Dementors on the train | Prisoner of Azkaban | **underrated as an image** — frost creeping across glass |
+| The Patronus | Prisoner of Azkaban | iconic anchor |
+| The sword under the frozen lake | Deathly Hallows 1 | **underrated** — silver light beneath ice |
 
-- **Palette:** dusty blue-grey, institutional cold
-- **Build:** instanced spheres in a receding grid, then a physics-lite fall
-- **Why:** the Ministry battle is the film's cinematographic high point, and the
-  shelf collapse is one image that is simultaneously enormous, cheap to
-  instance, and genuinely beautiful.
+- **Palette:** blue-silver against black
+- **Build:** post-processing (frost, vignette, desaturation) fighting a particle burst
+- **This is the gesture beat.** Of everything in the series it is the moment
+  built for a hand raised at a camera.
 
-### Act 6 — Half-Blood Prince · the cave
+### VI — Fire
+*War. The only movement that is loud.*
 
-**Image:** black water, a ring of green fire, hands rising from beneath.
+| Moment | Film | Standing |
+|---|---|---|
+| The Goblet | Goblet of Fire | iconic anchor |
+| The Burrow burning | Half-Blood Prince | **underrated** — a home lost in a ring of fire on black water |
+| Fiendfyre | Deathly Hallows 2 | **underrated** — cursed fire that takes the shape of animals |
 
-- **Palette:** teal-green — this film's actual signature grade, and widely
-  considered the best-shot of the eight
-- **Build:** reflective water shader, one ring light, silhouetted forms
-- **Position:** the bottom of the arc. Everything after this turns back toward
-  light.
+- **Palette:** ember orange, white-hot, ash
+- **Build:** fire as shader and particles, never geometry. Fiendfyre taking
+  animal shapes is the single most technically ambitious effect in the site —
+  scope it at the Phase 2 gate.
 
-### Act 7 — Deathly Hallows Pt 1 · the Tale of the Three Brothers
+### VII — The quiet
+*The breath. Almost no 3D, and the movement most likely to be quoted back at us.*
 
-**Image:** ink and shadow. Silhouette figures, a river, three gifts, a road.
+| Moment | Film | Standing |
+|---|---|---|
+| The dance to "O Children" | Deathly Hallows 1 | **underrated** — two silhouettes turning in a tent |
+| The Tale of the Three Brothers | Deathly Hallows 1 | **underrated** — already silhouette animation in the source |
+| Shell Cottage | Deathly Hallows 1 | **underrated** — the only bright beach in the series |
 
-- **Palette:** bleached parchment, ink black, one thin line of light
-- **Build:** 2D silhouette and masking work — almost no 3D at all
-- **Why this is the smartest act in the set:** the source sequence is *already*
-  stylised silhouette animation, so an original abstraction of it is stylistically
-  faithful without touching a frame of the film. It is also nearly free to
-  render, which buys budget back for Act 8. And tonally it is a held breath —
-  eight acts of escalating dark would be monotonous; this one changes the
-  medium entirely.
+- **Palette:** bleached parchment, ink black, then one shock of pale daylight
+- **Build:** 2D silhouette and masking. Nearly free to render, which buys the
+  budget back that Fiendfyre spends.
+- Deathly Hallows 1 is widely called the weak entry and is the most visually
+  distinctive of the eight — the first shot outside Hogwarts, on real locations.
+  **Building an entire movement from the film people skip is the single most
+  contrarian choice here, and the one most likely to earn a comment.**
 
-### Act 8 — Deathly Hallows Pt 2 · the shield, the ash, the dawn
+### VIII — Dawn
+*Return.*
 
-**Image:** a dome of light rising over everything. Then ash falling like snow.
-Then dawn — warm gold returning.
+| Moment | Film | Standing |
+|---|---|---|
+| The shield charm | Deathly Hallows 2 | iconic anchor |
+| Ash falling | Deathly Hallows 2 | — |
+| Dawn | Deathly Hallows 2 | — |
 
-- **Palette:** ash grey → fire → **the gold from Act 1**
-- **Build:** expanding shell shader, falling particulate, a final colour grade
-  that lands exactly on the opening palette
-- **Why it closes:** the last frame rhymes with the first. That is the difference
-  between an arc and a list, and it is the moment a viewer decides whether to
-  share it.
+- **Palette:** ash grey → fire → **the exact gold of Movement I**
+- The last frame rhymes with the first. That is the moment someone decides
+  whether to share it.
 
 ---
 
-## The connective layer — houses and characters
+## Arc
 
-Deliberately **not** a separate section. Between each act, the world dissolves
-into a constellation:
+Gold → wonder → connection → down → the turn → war → breath → gold returning.
 
-- **characters as points of light**
-- **house as colour** — the four palettes are the only place house colour is used
-- **relationships as threads** between points
-
-Built as GPU-instanced points and lines: nearly free in draw calls, and it is
-literally "connection" made visible.
-
-The mechanism that makes it more than decoration: **the constellation grows.**
-Each interstitial carries every node from the acts before it, plus the new ones.
-Between Act 1 and 2 it is sparse — a handful of points. By Act 8 it is dense and
-tangled, and you can *see* the accumulated weight of who is connected to whom.
-Seven interstitials, one growing web.
-
-That is the house-and-character connection you asked for, expressed as structure
-rather than as a page of profile cards.
+The ordering is deliberately **not** chronological, but it is not random either:
+it is emotional. Cold before Fire even though Azkaban precedes Goblet, because
+the first act of defiance has to come before the full war.
 
 ---
 
-## What was deliberately left out
+## Cut, and why
 
-- **Quidditch.** Reads as motion without meaning when abstracted.
-- **The graveyard, Snape's death, Dumbledore's tower.** Performance-driven
-  scenes. Without faces they become dark fields.
-- **The Mirror of Erised.** Beautiful idea, but the content of the mirror is the
-  point, and we cannot show it.
-- **Diagon Alley, the Great Hall as architecture.** Detailed environment
-  modelling is exactly the budget we do not have.
+- **Quidditch** — motion without meaning once abstracted.
+- **The graveyard, Snape's death, the tower confrontation, Narcissa's lie** —
+  the overlooked greats, and all performance. Without faces they are dark fields.
+- **The Mirror of Erised** — the content of the mirror is the entire point, and
+  we cannot show it.
+- **Diagon Alley, the Great Hall as architecture** — detailed environment
+  modelling is precisely the budget we do not have.

@@ -85,7 +85,7 @@ smooth. If the skeleton judders, no amount of art fixes it later.
 
 ## Phase 2 — Vertical slice: one act at final quality
 
-The single most important phase. Pick **one** act — not the first one, a
+The single most important phase. Pick **one** movement — not the first, a
 middle one — and build it to the quality bar we intend to ship.
 
 Purpose is calibration, not content. It answers:
@@ -94,9 +94,15 @@ Purpose is calibration, not content. It answers:
 - What does one act cost in MB and draw calls?
 - Does the intended quality bar survive the perf budget, or does the bar move?
 
-**Gate:** one act is genuinely finished — passes an `/impeccable audit`, holds
-60fps on both tiers, and its asset cost is measured. Multiply that cost by 8. If
-the result exceeds 10 MB or the schedule, **the scope changes here**, not later.
+Pick **Movement V (Cold)** as the slice: it carries the gesture beat, it is
+post-processing-heavy rather than asset-heavy, and it is representative of the
+hardest work without being the most expensive.
+
+**Gate:** one movement is genuinely finished — passes an `/impeccable audit`,
+holds 60fps on both tiers, and its asset cost is measured. Multiply that cost by
+8. If the result exceeds 10 MB or the schedule, **the scope changes here**, not
+later. Fiendfyre in Movement VI is the known outlier — scope it explicitly at
+this gate rather than discovering it late.
 
 ---
 
@@ -116,19 +122,21 @@ for a janky site is harder to undo.
 
 ---
 
-## Phase 4 — The connective layer
+## Phase 4 — The web
 
-Houses, characters, relationships. Deliberately built *after* the acts, and
-deliberately **not** as a separate section — a bolted-on data-viz page would
-read as a second, unrelated site.
+Houses, characters, relationships — **Movement III** in CONTENT.md, plus the
+persistent web that thickens under every movement after it.
 
 Implementation: GPU-instanced points and lines — characters as points, house as
-colour, relationships as threads. Cheap to render, and it is literally
-"connection" made visual. It lives in the **transitions between acts**, so it
-appears seven times as connective tissue rather than once as a detour.
+colour, relationships as threads. Cheap to render, and literally "connection"
+made visual.
 
-**Gate:** transitions carry meaning, cost near-nothing in draw calls, and the
-site still reads as one continuous thing.
+Built after the movements because it has to *react* to them: the web accumulates
+as the site progresses, so it needs the movements to exist before it can respond
+to them.
+
+**Gate:** the web reads as one growing object rather than a repeated graphic,
+costs near-nothing in draw calls, and the site still reads as continuous.
 
 ---
 
