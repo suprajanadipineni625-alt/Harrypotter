@@ -142,6 +142,7 @@ export const PARTS: Part[] = [
         prose:
           'They went north above the clouds in a car that had no business leaving the ground, and for a few hours the rules of the world were negotiable.',
         art: 'castle',
+        image: { back: 'scenes/car.webp', mid: '', fore: '' },
       },
       {
         id: 'writing',
@@ -173,6 +174,7 @@ export const PARTS: Part[] = [
         prose:
           'He drove the tooth through the cover and the book screamed, and ink came out of it like blood, and the boy in the memory came apart mid-sentence. Nobody understood yet that this was the first of seven.',
         art: 'chamber',
+        image: { back: 'scenes/fang.webp', mid: '', fore: '' },
         horcrux: 1,
       },
     ],
@@ -212,6 +214,7 @@ export const PARTS: Part[] = [
         prose:
           'You need a memory, and it has to be a real one, and it has to be strong enough to spend. What comes out is not a shield. It is the opposite of what is coming for you, given shape.',
         art: 'lake',
+        image: { back: 'scenes/patronus.webp', mid: '', fore: '' },
       },
       {
         id: 'timeturner',
@@ -303,6 +306,7 @@ export const PARTS: Part[] = [
         prose:
           'They went down together — thousands of them — and every voice spoke at once and none of them could be heard.',
         art: 'prophecy',
+        image: { back: 'scenes/shatter.webp', mid: '', fore: '' },
       },
       {
         id: 'veil',
@@ -480,6 +484,7 @@ export const PARTS: Part[] = [
         prose:
           'White, in every direction, and a choice about whether to get back on the train.',
         art: 'kingscross',
+        image: { back: 'scenes/kingscross.webp', mid: '', fore: '' },
         light: true,
       },
       {
