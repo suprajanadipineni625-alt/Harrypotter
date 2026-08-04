@@ -1,0 +1,104 @@
+/*
+ * Phase 0/1 shell styling only.
+ *
+ * The real type and colour system is written by `/impeccable init` into
+ * DESIGN.md before Phase 2. Nothing here is a design decision worth defending —
+ * it exists so the machine can be judged. Fonts are a deliberate placeholder
+ * serif stack rather than one of the faces every AI-generated UI converges on.
+ */
+
+.canvas-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Gives the document something to scroll. The canvas is fixed behind it. */
+.scroll-track {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hud {
+  position: fixed;
+  left: clamp(1.25rem, 5vw, 4.5rem);
+  bottom: clamp(1.5rem, 8vh, 5rem);
+  z-index: 2;
+  max-width: min(34rem, 70vw);
+  pointer-events: none;
+  mix-blend-mode: difference;
+  color: #f4f0e8;
+}
+
+.hud__numeral {
+  margin: 0 0 0.5rem;
+  font: 400 0.75rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.42em;
+  opacity: 0.65;
+}
+
+.hud__title {
+  margin: 0 0 0.75rem;
+  font: 300 clamp(2rem, 6vw, 4.25rem) / 0.95 'Iowan Old Style', 'Palatino Linotype',
+    Palatino, Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.hud__intent {
+  margin: 0;
+  max-width: 30rem;
+  font: 400 clamp(0.8rem, 1.1vw, 0.95rem) / 1.6 'Iowan Old Style', Palatino, Georgia,
+    serif;
+  opacity: 0.6;
+  text-wrap: pretty;
+}
+
+/* Eight ticks, one per movement. The active one extends as the movement runs. */
+.rail {
+  position: fixed;
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+
+.rail__tick {
+  display: block;
+  width: 2.25rem;
+  height: 1px;
+  background: #f4f0e8;
+  transform-origin: right center;
+  opacity: 0.4;
+  transition: opacity 0.4s ease;
+}
+
+.rail__tick[data-active='true'] {
+  opacity: 1;
+}
+
+.reduced-note {
+  position: fixed;
+  left: 50%;
+  bottom: 0.75rem;
+  transform: translateX(-50%);
+  z-index: 3;
+  margin: 0;
+  font: 400 0.7rem/1 ui-monospace, Menlo, monospace;
+  color: #f4f0e8;
+  opacity: 0.5;
+  mix-blend-mode: difference;
+}
+
+/* The site is motion. When the OS asks for less, we calm it rather than
+   removing it — but transitions stop animating entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .rail__tick {
+    transition: none;
+  }
+}

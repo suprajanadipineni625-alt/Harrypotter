@@ -1,0 +1,44 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Lenis drives scrolling; native smooth scrolling would fight it. */
+  scroll-behavior: auto;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  background: #07050a;
+}
+
+body {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Lenis adds these; without them the scroll container misbehaves. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  touch-action: pan-y;
+}
