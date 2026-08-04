@@ -1,6 +1,22 @@
 # Vendored skill attribution
 
-The skills in this directory are third-party, vendored under their original MIT licenses.
+The skills in this directory are third-party, vendored under their original licenses.
+
+## Design language: `impeccable`
+
+- Source: https://github.com/pbakaus/impeccable (v4.0.4, by Paul Bakaus)
+- License: Apache 2.0 — full text at `impeccable/LICENSE`, third-party notices
+  at `impeccable/NOTICE.md`.
+- One skill with 23 sub-commands (`init`, `craft`, `shape`, `audit`, `critique`,
+  `polish`, `animate`, `bolder`, `quieter`, `overdrive`, `typeset`, `colorize`,
+  `layout`, `distill`, `harden`, `optimize`, `live`, …), 4 agents installed in
+  `.claude/agents/`, and a deterministic anti-pattern detector.
+- Started from Anthropic's `frontend-design` skill and expands on it.
+- `.claude/settings.json` carries its two hooks: an immediate-tier design check
+  after Edit/Write/MultiEdit on UI files, and a full-rule deep pass on Stop.
+  Both require Node 22+ (verified working here on v22.22.2) and no-op quietly
+  otherwise.
+- Not yet run: `/impeccable init`, which writes PRODUCT.md and DESIGN.md.
 
 ## Three.js core set (23 skills, `threejs-*`)
 
