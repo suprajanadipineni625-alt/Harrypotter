@@ -92,6 +92,7 @@ export const PARTS: Part[] = [
         prose:
           'They came one at a time, and then in dozens, and then in a flood — through the letterbox, down the chimney, under the door, until the room was a storm of paper and every envelope carried the same name. Somebody, somewhere, had been keeping count of him after all.',
         art: 'letters',
+        image: { back: 'scenes/letters.webp', mid: '', fore: '' },
       },
       {
         id: 'platform',
@@ -99,6 +100,7 @@ export const PARTS: Part[] = [
         prose:
           'The barrier looked like brick and behaved like water. On the other side a scarlet engine breathed steam over a crowd of trunks and owls, and the ordinary world closed quietly behind him.',
         art: 'platform',
+        image: { back: 'scenes/platform.webp', mid: '', fore: '' },
       },
       {
         id: 'sorting',
@@ -106,6 +108,7 @@ export const PARTS: Part[] = [
         prose:
           'Candles hung in the air without strings. Four tables ran the length of the hall in four colours, and an old hat considered him for rather longer than it had considered anybody else before it decided where he belonged.',
         art: 'greathall',
+        image: { back: 'scenes/sorting.webp', mid: '', fore: '' },
       },
       {
         id: 'chess',
@@ -113,6 +116,7 @@ export const PARTS: Part[] = [
         prose:
           'The board was the size of the room and the pieces did not pretend to be gentle. Winning required somebody to be taken, and the boy who had been afraid of everything all year worked out the move and then made it himself.',
         art: 'chess',
+        image: { back: 'scenes/chess.webp', mid: '', fore: '' },
       },
       {
         id: 'mirror',
@@ -120,6 +124,7 @@ export const PARTS: Part[] = [
         prose:
           'It showed him a family he had never met, standing behind him with their hands on his shoulders. The trap was not the glass. The trap was how long a person could stand there.',
         art: 'mirror',
+        image: { back: 'scenes/mirror.webp', mid: '', fore: '' },
       },
     ],
   },

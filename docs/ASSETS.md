@@ -66,8 +66,26 @@ permission is both a privacy leak and a single point of failure.
 | Asset | Scene | Source | Licence | Bytes | Notes |
 |---|---|---|---|---|---|
 | `public/favicon.svg` | — | original | — | 233 | hand-written |
-| `public/scenes/castle.webp` | 1 · The castle | generated, descriptive prompt | original work | 64 000 | 2.72 MB PNG → WebP, −98% |
-| `public/scenes/dawn.webp` | 8 · Dawn | generated, descriptive prompt | original work | 30 000 | 1.75 MB PNG → WebP, −98% |
+| `public/scenes/castle.webp` | 1 · The castle | generated, descriptive prompt | original work | 64 000 | −98% from PNG |
+| `public/scenes/letters.webp` | 1 · The letters | generated, descriptive prompt | original work | 119 000 | −95% |
+| `public/scenes/platform.webp` | 1 · Platform | generated + marks removed | original work | 244 000 | see note |
+| `public/scenes/sorting.webp` | 1 · The Sorting | generated + marks removed | original work | 140 000 | see note |
+| `public/scenes/chess.webp` | 1 · The chess game | generated, descriptive prompt | original work | 169 000 | −95% |
+| `public/scenes/mirror.webp` | 1 · The mirror | generated, descriptive prompt | original work | 196 000 | −93% |
+| `public/scenes/dawn.webp` | 8 · Dawn | generated, descriptive prompt | original work | 30 000 | −98% |
+
+**Marks removed:** two generations came back carrying trademarked wordmarks and
+heraldic devices despite the prompt forbidding lettering.
+`scripts/remove-marks.mjs` replaces those regions with blurred, darkened
+surrounding pixels through a soft elliptical mask. The aim is that the mark is
+GONE, not present-but-fuzzy — a blur that leaves a wordmark legible removes
+nothing, since recognisability is the whole test, and it looks like damage as
+well. Regions are normalised so they survive resizing.
+
+**Budget watch:** seven backdrops cost 962 kB, averaging ~137 kB each. All 47 at
+that rate is roughly 6.4 MB, which fits under the 10 MB ceiling but not with
+much room. If it tightens, drop WebP quality from 80 to 70 before cutting
+anything else — it is worth about a third and is invisible at this scale.
 
 Generated from prompts describing real architecture — Gothic revival, crag,
 viaduct, loch — never naming the franchise. Naming it was refused by the
