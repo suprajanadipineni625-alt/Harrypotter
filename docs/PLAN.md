@@ -21,6 +21,7 @@ left to fix them.
 | Choreography | **GSAP + ScrollTrigger** | One timeline owns act progression. |
 | UI motion | **Motion.dev** | React layer only — overlays, menus, HUD. Not the 3D. |
 | Gesture | **`@mediapipe/tasks-vision`** | On-device. See §Phase 5. |
+| Video output | **`@remotion/three`** | Renders the site's own act components to 9:16 60fps deterministically. See §Phase 6. |
 | Language | **TypeScript** | Non-negotiable at this size. |
 
 ---
@@ -52,6 +53,20 @@ Still almost no content. This builds the machine that all eight acts run on.
 1. Lenis + GSAP ticker wiring, `lagSmoothing(0)`.
 2. One master ScrollTrigger timeline with **8 empty acts** and normalised
    progress (`0..1` global, `0..1` within act).
+
+   **Architectural rule, decided here because it cannot be retrofitted:** act
+   state must be a **pure function of normalised progress**. No animation may
+   read the wall clock. Concretely — never drive act state from `useFrame`'s
+   internal clock; pass progress in as a prop.
+
+   This is what makes Remotion possible later (see Phase 6). R3F's `useFrame`
+   advances on real time, which is non-deterministic under a render pipeline and
+   produces flicker and motion artefacts; Remotion's `<ThreeCanvas>` instead
+   drives from `useCurrentFrame()`. If progress is a prop, **scroll drives it on
+   the site and Remotion's frame counter drives it in the video — same
+   components, two drivers, zero duplicated scene work.** If we let the clock
+   creep in anywhere, the video path is gone and the only option is screen
+   recording.
 3. **One persistent scene, not eight.** Acts are *parameter states* of a single
    R3F scene — camera, colour grading, fog, light, post-processing stack — that
    interpolate between each other. This is both the performance strategy and the
@@ -152,10 +167,28 @@ flag entirely leaves the site untouched.
 
 Explicit phase, because the video is the actual deliverable for the stated goal.
 
-1. Verify key moments survive a centre crop to 9:16 (BUILD-CONSTRAINTS §3).
+**Render the video; do not screen-record it.** Given the Phase 1 rule that act
+state is a pure function of progress, the scene components can be mounted inside
+[`@remotion/three`](https://www.remotion.dev/docs/three)'s `<ThreeCanvas>` and
+rendered natively at **1080 × 1920, 60fps**, driven by `useCurrentFrame()`.
+
+This removes two problems that were previously accepted as unavoidable:
+
+- **Judder is gone.** Output is deterministic, not a capture of a live browser.
+- **The centre-crop problem is gone.** We compose *natively* at 9:16 rather than
+  cropping a 16:9 desktop recording — so the letterbox-vs-tall-window decision in
+  BUILD-CONSTRAINTS §3 stops being a constraint on how the hero is designed.
+
+Requirements: `<ThreeCanvas>` needs explicit `width`/`height`; any `<Sequence>`
+inside the canvas needs `layout="none"`; and nothing in the scene may use
+`useFrame` for state.
+
+1. Build the Remotion composition reusing the site's act components.
 2. Fix the opening 3 seconds — must open on motion, never a loader.
-3. Record at 60fps from the desktop build.
-4. OG/meta card so the shared link itself looks right.
+3. Render at 1080 × 1920, 60fps.
+4. Screen recording stays as the fallback only if a component proves impossible
+   to drive deterministically.
+5. OG/meta card so the shared link itself looks right.
 
 **Gate:** a 9:16 cut exists that is genuinely good, with no judder.
 
