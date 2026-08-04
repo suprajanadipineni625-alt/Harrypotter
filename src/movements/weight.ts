@@ -17,13 +17,22 @@ import { smoothstep, type Progress } from '../core/progress'
 /** Must match HOLD in interpolate.ts — both describe the same boundary. */
 const HOLD = 0.65
 
-export function movementWeight(progress: Progress, index: number): number {
+export function movementWeight(
+  progress: Progress,
+  index: number,
+  count = 8,
+): number {
   const current = progress.movement
   const local = progress.local
 
+  // The final movement has nothing to cross-fade INTO, so it must hold at full
+  // weight to the end. Without this the site fades to an empty frame exactly
+  // where Dawn is supposed to land on Movement I's gold — the one moment the
+  // whole arc is built around.
+  const isLast = index === count - 1
+
   if (index === current) {
-    // Full presence until the crossfade starts, then out.
-    if (local <= HOLD) return 1
+    if (local <= HOLD || isLast) return 1
     return 1 - smoothstep((local - HOLD) / (1 - HOLD))
   }
 
